@@ -6,6 +6,45 @@
     <title>Quran Kareem | Ramadan Kareem</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
+  <section style="padding:40px; text-align:center;">
+  <h2>استمع إلى القرآن الكريم</h2>
+
+  <select id="reciter">
+    <option value="ar.alafasy">مشاري العفاسي</option>
+    <option value="ar.abdurrahmaansudais">السديس</option>
+    <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
+  </select>
+
+  <select id="surah">
+    <option value="1">الفاتحة</option>
+    <option value="2">البقرة</option>
+    <option value="36">يس</option>
+    <option value="55">الرحمن</option>
+    <option value="67">الملك</option>
+    <option value="112">الإخلاص</option>
+  </select>
+
+  <br><br>
+
+  <button onclick="playSurah()">تشغيل</button>
+
+  <br><br>
+
+  <audio id="audioPlayer" controls style="width:80%; max-width:500px;"></audio>
+</section>
+
+<script>
+function playSurah() {
+  const reciter = document.getElementById("reciter").value;
+  const surah = document.getElementById("surah").value;
+
+  const url = `https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surah}.mp3`;
+
+  const player = document.getElementById("audioPlayer");
+  player.src = url;
+  player.play();
+}
+</script>
   <body>
     <header class="hero">
       <div class="overlay"></div>
