@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>المصحف Ultra Elite</title>
+<title>المصحف Ultra Elite Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Amiri+Quran&display=swap" rel="stylesheet">
 
@@ -18,7 +18,7 @@ transition:.3s;
 
 header{
 text-align:center;
-padding:30px;
+padding:25px;
 background:linear-gradient(135deg,#0b1c2d,#102c44);
 }
 
@@ -66,8 +66,6 @@ transition:.2s;
 
 audio{width:100%;margin-top:15px}
 
-.pagination{text-align:center;margin-top:15px}
-
 .progress{
 height:6px;
 background:#444;
@@ -80,7 +78,13 @@ margin-top:10px;
 height:100%;
 width:0%;
 background:#f4c430;
-transition:.2s;
+}
+
+.prayer-box{
+margin-top:25px;
+padding:15px;
+background:#203c5c;
+border-radius:10px;
 }
 
 .light{background:#f5f5f5;color:black}
@@ -92,7 +96,7 @@ transition:.2s;
 <body>
 
 <header>
-<h1>📖 المصحف Ultra Elite</h1>
+<h1>📖 المصحف Ultra Elite Pro</h1>
 </header>
 
 <section class="card">
@@ -102,14 +106,8 @@ transition:.2s;
 <select id="surahSelect"></select>
 <input type="text" id="searchInput" placeholder="بحث داخل السورة">
 <button onclick="loadSurah()">تحميل السورة</button>
-<button onclick="toggleAuto()">Auto Play</button>
+<button onclick="toggleAuto()">Auto</button>
 <button onclick="downloadSurah()">تحميل MP3</button>
-</div>
-
-<div class="pagination">
-<button onclick="prevPage()">⬅ السابق</button>
-<span>صفحة <span id="pageNumber">1</span></span>
-<button onclick="nextPage()">التالي ➡</button>
 </div>
 
 <div id="ayahContainer"></div>
@@ -118,15 +116,20 @@ transition:.2s;
 
 <audio id="audio" controls></audio>
 
+<div class="prayer-box">
+<h3>🕌 مواعيد الصلاة</h3>
+<div id="prayerTimes">جاري تحميل المواقيت...</div>
+</div>
+
 </section>
 
 <script>
 const reciters=[
-{name:"العفاسي",id:"ar.alafasy"},
-{name:"السديس (الحرم)",id:"ar.abdurrahmaansudais"},
-{name:"المعيقلي (الحرم)",id:"ar.mahermuaiqly"},
-{name:"الحصري (مصر)",id:"ar.husary"},
-{name:"المنشاوي (مصر)",id:"ar.minshawi"}
+{name:"العفاسي",id:"Alafasy_128kbps"},
+{name:"السديس (الحرم)",id:"Abdurrahmaan_As-Sudais_128kbps"},
+{name:"المعيقلي (الحرم)",id:"Maher_AlMuaiqly_128kbps"},
+{name:"الحصري (مصر)",id:"Husary_128kbps"},
+{name:"المنشاوي (مصر)",id:"Minshawy_Murattal_128kbps"}
 ];
 
 const reciterSelect=document.getElementById("reciterSelect");
@@ -136,7 +139,6 @@ const audio=document.getElementById("audio");
 const progressBar=document.getElementById("progressBar");
 
 let currentSurah=1;
-let currentPage=1;
 let ayahs=[];
 let autoPlay=false;
 let currentAyahIndex=0;
@@ -165,41 +167,18 @@ fetch(`https://api.alquran.cloud/v1/surah/${currentSurah}/quran-uthmani`)
 .then(r=>r.json())
 .then(d=>{
 ayahs=d.data.ayahs;
-currentPage=1;
-renderPage();
+renderSurah();
 });
 }
 
-function renderPage(){
+function renderSurah(){
 ayahContainer.innerHTML="";
-let start=(currentPage-1)*10;
-let end=start+10;
-let pageAyahs=ayahs.slice(start,end);
-
-pageAyahs.forEach((a,i)=>{
+ayahs.forEach((a,i)=>{
 let p=document.createElement("p");
 p.innerHTML=a.text+" ﴿"+a.numberInSurah+"﴾";
-p.onclick=()=>playAyah(start+i,p);
+p.onclick=()=>playAyah(i,p);
 ayahContainer.appendChild(p);
 });
-
-document.getElementById("pageNumber").textContent=currentPage;
-localStorage.setItem("lastSurah",currentSurah);
-localStorage.setItem("lastPage",currentPage);
-}
-
-function nextPage(){
-if(currentPage*10<ayahs.length){
-currentPage++;
-renderPage();
-}
-}
-
-function prevPage(){
-if(currentPage>1){
-currentPage--;
-renderPage();
-}
 }
 
 function playAyah(index,element){
@@ -208,18 +187,11 @@ let reciter=reciterSelect.value;
 let surah=String(currentSurah).padStart(3,'0');
 let ayah=String(ayahs[index].numberInSurah).padStart(3,'0');
 
-audio.src=`https://cdn.islamic.network/quran/audio/128/${reciter}/${surah}${ayah}.mp3`;
+audio.src=`https://everyayah.com/data/${reciter}/${surah}${ayah}.mp3`;
 audio.play();
 
 document.querySelectorAll("#ayahContainer p").forEach(p=>p.classList.remove("activeAyah"));
 if(element) element.classList.add("activeAyah");
-}
-
-audio.ontimeupdate=function(){
-if(audio.duration){
-let percent=(audio.currentTime/audio.duration)*100;
-progressBar.style.width=percent+"%";
-}
 }
 
 audio.onended=function(){
@@ -229,28 +201,49 @@ playAyah(currentAyahIndex);
 }
 }
 
+audio.ontimeupdate=function(){
+if(audio.duration){
+let percent=(audio.currentTime/audio.duration)*100;
+progressBar.style.width=percent+"%";
+}
+}
+
 function toggleAuto(){
 autoPlay=!autoPlay;
-alert(autoPlay?"تم تفعيل التشغيل التلقائي":"تم إيقاف التشغيل التلقائي");
 }
 
 function downloadSurah(){
 let reciter=reciterSelect.value;
-window.open(`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${currentSurah}.mp3`);
+let surah=String(currentSurah).padStart(3,'0');
+window.open(`https://everyayah.com/data/${reciter}/${surah}001.mp3`);
 }
 
 document.getElementById("searchInput").addEventListener("input",function(){
 let value=this.value;
-let ps=document.querySelectorAll("#ayahContainer p");
-ps.forEach(p=>{
+document.querySelectorAll("#ayahContainer p").forEach(p=>{
 p.style.display=p.textContent.includes(value)?"block":"none";
 });
 });
 
-let savedSurah=localStorage.getItem("lastSurah");
-let savedPage=localStorage.getItem("lastPage");
-if(savedSurah){currentSurah=savedSurah;surahSelect.value=savedSurah;loadSurah();}
-if(savedPage){currentPage=parseInt(savedPage);}
+// 🕌 Prayer Times
+if(navigator.geolocation){
+navigator.geolocation.getCurrentPosition(pos=>{
+let lat=pos.coords.latitude;
+let lon=pos.coords.longitude;
+
+fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=5`)
+.then(r=>r.json())
+.then(d=>{
+let t=d.data.timings;
+document.getElementById("prayerTimes").innerHTML=
+`الفجر: ${t.Fajr}<br>
+الظهر: ${t.Dhuhr}<br>
+العصر: ${t.Asr}<br>
+المغرب: ${t.Maghrib}<br>
+العشاء: ${t.Isha}`;
+});
+});
+}
 </script>
 
 </body>
