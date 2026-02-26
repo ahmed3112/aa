@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>المصحف الكامل | Ramadan Kareem</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Amiri+Quran&display=swap" rel="stylesheet">
 
 <style>
 body{
@@ -18,7 +18,7 @@ body{
 
 header{
   text-align:center;
-  padding:60px 20px;
+  padding:50px 20px;
   background:linear-gradient(135deg,#0b1c2d,#102c44);
 }
 
@@ -30,6 +30,11 @@ h1{color:#f4c430}
   padding:25px;
   border-radius:15px;
   max-width:1000px;
+}
+
+.controls{
+  text-align:center;
+  margin-bottom:20px;
 }
 
 select,button{
@@ -46,12 +51,29 @@ button{
   cursor:pointer;
 }
 
-button:hover{opacity:0.8}
+button:hover{opacity:0.85}
 
 #ayahContainer{
   margin-top:20px;
-  line-height:2.2;
-  font-size:20px;
+  line-height:2.4;
+  font-size:24px;
+  font-family:'Amiri Quran',serif;
+}
+
+#ayahContainer p{
+  padding:8px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+#ayahContainer p:hover{
+  background:#203c5c;
+}
+
+.activeAyah{
+  background:#f4c430;
+  color:black;
 }
 
 audio{
@@ -78,6 +100,10 @@ audio{
   background:white;
   color:black;
 }
+
+.light #ayahContainer p:hover{
+  background:#eee;
+}
 </style>
 </head>
 
@@ -92,7 +118,7 @@ audio{
 
 <section class="card">
 
-<div style="text-align:center">
+<div class="controls">
   <select id="reciterSelect"></select>
   <select id="surahSelect"></select>
   <button onclick="loadSurah()">عرض السورة</button>
@@ -117,6 +143,9 @@ const surahSelect=document.getElementById("surahSelect");
 const ayahContainer=document.getElementById("ayahContainer");
 const audio=document.getElementById("audio");
 
+let currentSurah=1;
+
+// تحميل القراء
 reciters.forEach(r=>{
 let o=document.createElement("option");
 o.value=r.id;
@@ -124,6 +153,7 @@ o.textContent=r.name;
 reciterSelect.appendChild(o);
 });
 
+// تحميل 114 سورة
 fetch("https://api.alquran.cloud/v1/surah")
 .then(res=>res.json())
 .then(data=>{
@@ -135,41 +165,50 @@ surahSelect.appendChild(o);
 });
 });
 
+// عرض السورة
 function loadSurah(){
-let surah=surahSelect.value;
+currentSurah=surahSelect.value;
 let reciter=reciterSelect.value;
 
-fetch(`https://api.alquran.cloud/v1/surah/${surah}`)
+fetch(`https://api.alquran.cloud/v1/surah/${currentSurah}/quran-uthmani`)
 .then(res=>res.json())
 .then(data=>{
 ayahContainer.innerHTML="";
 data.data.ayahs.forEach(a=>{
 let p=document.createElement("p");
-p.innerHTML=a.text+" ("+a.numberInSurah+")";
-p.onclick=()=>playAyah(surah,a.numberInSurah);
+p.innerHTML=a.text+" ﴿"+a.numberInSurah+"﴾";
+p.onclick=()=>playAyah(a.numberInSurah,p);
 ayahContainer.appendChild(p);
 });
 });
 
-audio.src=`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surah}.mp3`;
+// تشغيل السورة كاملة
+audio.src=`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${currentSurah}.mp3`;
 audio.play();
 }
 
-function playAyah(surah,ayah){
+// تشغيل آية
+function playAyah(ayahNumber,element){
 let reciter=reciterSelect.value;
-let formattedAyah=String(ayah).padStart(3,'0');
-let formattedSurah=String(surah).padStart(3,'0');
+let formattedAyah=String(ayahNumber).padStart(3,'0');
+let formattedSurah=String(currentSurah).padStart(3,'0');
+
 audio.src=`https://cdn.islamic.network/quran/audio/128/${reciter}/${formattedSurah}${formattedAyah}.mp3`;
 audio.play();
+
+// تمييز الآية
+document.querySelectorAll("#ayahContainer p").forEach(p=>p.classList.remove("activeAyah"));
+element.classList.add("activeAyah");
 }
 
+// تحميل السورة
 function downloadSurah(){
-let surah=surahSelect.value;
 let reciter=reciterSelect.value;
-let link=`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surah}.mp3`;
+let link=`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${currentSurah}.mp3`;
 window.open(link,'_blank');
 }
 
+// وضع ليلي / نهاري
 function toggleMode(){
 document.body.classList.toggle("light");
 }
