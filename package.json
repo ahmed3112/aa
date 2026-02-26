@@ -1,0 +1,9 @@
+{
+  "name": "quran-kareem-ramadan-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Ramadan Quran Kareem website",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,25 @@
+name: Test Website
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate JavaScript syntax
+        run: node -c script.js
+
+      - name: Run automated tests
+        run: npm test
