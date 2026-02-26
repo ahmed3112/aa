@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>المصحف الاحترافي</title>
+<title>المصحف Ultra Elite</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Amiri+Quran&display=swap" rel="stylesheet">
 
@@ -18,7 +18,7 @@ transition:.3s;
 
 header{
 text-align:center;
-padding:40px;
+padding:30px;
 background:linear-gradient(135deg,#0b1c2d,#102c44);
 }
 
@@ -27,12 +27,12 @@ background:#162f4a;
 margin:20px auto;
 padding:25px;
 border-radius:15px;
-max-width:1100px;
+max-width:1200px;
 }
 
 .controls{text-align:center;margin-bottom:15px}
 
-select,button{
+select,button,input{
 padding:8px 12px;
 margin:5px;
 border-radius:8px;
@@ -48,8 +48,8 @@ font-weight:bold;
 
 #ayahContainer{
 font-family:'Amiri Quran';
-font-size:26px;
-line-height:2.3;
+font-size:28px;
+line-height:2.4;
 margin-top:20px;
 }
 
@@ -57,6 +57,7 @@ margin-top:20px;
 padding:6px;
 border-radius:8px;
 cursor:pointer;
+transition:.2s;
 }
 
 #ayahContainer p:hover{background:#203c5c}
@@ -65,30 +66,33 @@ cursor:pointer;
 
 audio{width:100%;margin-top:15px}
 
-.toggle{
-position:fixed;
-top:10px;
-left:10px;
+.pagination{text-align:center;margin-top:15px}
+
+.progress{
+height:6px;
+background:#444;
+border-radius:5px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.progress-bar{
+height:100%;
+width:0%;
 background:#f4c430;
-padding:6px 10px;
-border-radius:8px;
-cursor:pointer;
+transition:.2s;
 }
 
 .light{background:#f5f5f5;color:black}
 .light .card{background:white;color:black}
 .light #ayahContainer p:hover{background:#eee}
-
-.pagination{text-align:center;margin-top:15px}
 </style>
 </head>
 
 <body>
 
-<div class="toggle" onclick="toggleMode()">🌙 / ☀</div>
-
 <header>
-<h1>📖 المصحف الاحترافي</h1>
+<h1>📖 المصحف Ultra Elite</h1>
 </header>
 
 <section class="card">
@@ -96,9 +100,10 @@ cursor:pointer;
 <div class="controls">
 <select id="reciterSelect"></select>
 <select id="surahSelect"></select>
+<input type="text" id="searchInput" placeholder="بحث داخل السورة">
 <button onclick="loadSurah()">تحميل السورة</button>
+<button onclick="toggleAuto()">Auto Play</button>
 <button onclick="downloadSurah()">تحميل MP3</button>
-<button onclick="toggleAuto()">تشغيل آية تلقائي</button>
 </div>
 
 <div class="pagination">
@@ -109,6 +114,8 @@ cursor:pointer;
 
 <div id="ayahContainer"></div>
 
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
 <audio id="audio" controls></audio>
 
 </section>
@@ -116,14 +123,17 @@ cursor:pointer;
 <script>
 const reciters=[
 {name:"العفاسي",id:"ar.alafasy"},
-{name:"السديس",id:"ar.abdurrahmaansudais"},
-{name:"المعيقلي",id:"ar.mahermuaiqly"}
+{name:"السديس (الحرم)",id:"ar.abdurrahmaansudais"},
+{name:"المعيقلي (الحرم)",id:"ar.mahermuaiqly"},
+{name:"الحصري (مصر)",id:"ar.husary"},
+{name:"المنشاوي (مصر)",id:"ar.minshawi"}
 ];
 
 const reciterSelect=document.getElementById("reciterSelect");
 const surahSelect=document.getElementById("surahSelect");
 const ayahContainer=document.getElementById("ayahContainer");
 const audio=document.getElementById("audio");
+const progressBar=document.getElementById("progressBar");
 
 let currentSurah=1;
 let currentPage=1;
@@ -174,6 +184,7 @@ ayahContainer.appendChild(p);
 });
 
 document.getElementById("pageNumber").textContent=currentPage;
+localStorage.setItem("lastSurah",currentSurah);
 localStorage.setItem("lastPage",currentPage);
 }
 
@@ -204,6 +215,13 @@ document.querySelectorAll("#ayahContainer p").forEach(p=>p.classList.remove("act
 if(element) element.classList.add("activeAyah");
 }
 
+audio.ontimeupdate=function(){
+if(audio.duration){
+let percent=(audio.currentTime/audio.duration)*100;
+progressBar.style.width=percent+"%";
+}
+}
+
 audio.onended=function(){
 if(autoPlay && currentAyahIndex+1<ayahs.length){
 currentAyahIndex++;
@@ -213,7 +231,7 @@ playAyah(currentAyahIndex);
 
 function toggleAuto(){
 autoPlay=!autoPlay;
-alert(autoPlay?"تم تشغيل الآيات تلقائي":"تم إيقاف التشغيل التلقائي");
+alert(autoPlay?"تم تفعيل التشغيل التلقائي":"تم إيقاف التشغيل التلقائي");
 }
 
 function downloadSurah(){
@@ -221,9 +239,18 @@ let reciter=reciterSelect.value;
 window.open(`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${currentSurah}.mp3`);
 }
 
-function toggleMode(){
-document.body.classList.toggle("light");
-}
+document.getElementById("searchInput").addEventListener("input",function(){
+let value=this.value;
+let ps=document.querySelectorAll("#ayahContainer p");
+ps.forEach(p=>{
+p.style.display=p.textContent.includes(value)?"block":"none";
+});
+});
+
+let savedSurah=localStorage.getItem("lastSurah");
+let savedPage=localStorage.getItem("lastPage");
+if(savedSurah){currentSurah=savedSurah;surahSelect.value=savedSurah;loadSurah();}
+if(savedPage){currentPage=parseInt(savedPage);}
 </script>
 
 </body>
