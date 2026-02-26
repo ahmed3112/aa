@@ -1,115 +1,179 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quran Kareem | Ramadan Kareem</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <section style="padding:40px; text-align:center;">
-  <h2>استمع إلى القرآن الكريم</h2>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المصحف الكامل | Ramadan Kareem</title>
 
-  <select id="reciter">
-    <option value="ar.alafasy">مشاري العفاسي</option>
-    <option value="ar.abdurrahmaansudais">السديس</option>
-    <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
-  </select>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
-  <select id="surah">
-    <option value="1">الفاتحة</option>
-    <option value="2">البقرة</option>
-    <option value="36">يس</option>
-    <option value="55">الرحمن</option>
-    <option value="67">الملك</option>
-    <option value="112">الإخلاص</option>
-  </select>
+<style>
+body{
+  margin:0;
+  font-family:'Cairo',sans-serif;
+  background:#0b1c2d;
+  color:white;
+  transition:0.3s;
+}
 
-  <br><br>
+header{
+  text-align:center;
+  padding:60px 20px;
+  background:linear-gradient(135deg,#0b1c2d,#102c44);
+}
 
-  <button onclick="playSurah()">تشغيل</button>
+h1{color:#f4c430}
 
-  <br><br>
+.card{
+  background:#162f4a;
+  margin:20px auto;
+  padding:25px;
+  border-radius:15px;
+  max-width:1000px;
+}
 
-  <audio id="audioPlayer" controls style="width:80%; max-width:500px;"></audio>
+select,button{
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
+  border:none;
+  font-family:'Cairo';
+}
+
+button{
+  background:#f4c430;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{opacity:0.8}
+
+#ayahContainer{
+  margin-top:20px;
+  line-height:2.2;
+  font-size:20px;
+}
+
+audio{
+  margin-top:20px;
+  width:100%;
+}
+
+.toggle{
+  position:fixed;
+  top:15px;
+  left:15px;
+  background:#f4c430;
+  padding:8px 12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.light{
+  background:#f5f5f5;
+  color:black;
+}
+
+.light .card{
+  background:white;
+  color:black;
+}
+</style>
+</head>
+
+<body>
+
+<div class="toggle" onclick="toggleMode()">🌙 / ☀</div>
+
+<header>
+  <h1>🌙 رمضان كريم</h1>
+  <h2>المصحف الكامل بالصوت</h2>
+</header>
+
+<section class="card">
+
+<div style="text-align:center">
+  <select id="reciterSelect"></select>
+  <select id="surahSelect"></select>
+  <button onclick="loadSurah()">عرض السورة</button>
+  <button onclick="downloadSurah()">تحميل السورة</button>
+</div>
+
+<div id="ayahContainer"></div>
+
+<audio id="audio" controls></audio>
+
 </section>
 
 <script>
-function playSurah() {
-  const reciter = document.getElementById("reciter").value;
-  const surah = document.getElementById("surah").value;
+const reciters=[
+{name:"مشاري العفاسي",id:"ar.alafasy"},
+{name:"السديس",id:"ar.abdurrahmaansudais"},
+{name:"ماهر المعيقلي",id:"ar.mahermuaiqly"}
+];
 
-  const url = `https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surah}.mp3`;
+const reciterSelect=document.getElementById("reciterSelect");
+const surahSelect=document.getElementById("surahSelect");
+const ayahContainer=document.getElementById("ayahContainer");
+const audio=document.getElementById("audio");
 
-  const player = document.getElementById("audioPlayer");
-  player.src = url;
-  player.play();
+reciters.forEach(r=>{
+let o=document.createElement("option");
+o.value=r.id;
+o.textContent=r.name;
+reciterSelect.appendChild(o);
+});
+
+fetch("https://api.alquran.cloud/v1/surah")
+.then(res=>res.json())
+.then(data=>{
+data.data.forEach(s=>{
+let o=document.createElement("option");
+o.value=s.number;
+o.textContent=s.number+" - "+s.name;
+surahSelect.appendChild(o);
+});
+});
+
+function loadSurah(){
+let surah=surahSelect.value;
+let reciter=reciterSelect.value;
+
+fetch(`https://api.alquran.cloud/v1/surah/${surah}`)
+.then(res=>res.json())
+.then(data=>{
+ayahContainer.innerHTML="";
+data.data.ayahs.forEach(a=>{
+let p=document.createElement("p");
+p.innerHTML=a.text+" ("+a.numberInSurah+")";
+p.onclick=()=>playAyah(surah,a.numberInSurah);
+ayahContainer.appendChild(p);
+});
+});
+
+audio.src=`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surah}.mp3`;
+audio.play();
+}
+
+function playAyah(surah,ayah){
+let reciter=reciterSelect.value;
+let formattedAyah=String(ayah).padStart(3,'0');
+let formattedSurah=String(surah).padStart(3,'0');
+audio.src=`https://cdn.islamic.network/quran/audio/128/${reciter}/${formattedSurah}${formattedAyah}.mp3`;
+audio.play();
+}
+
+function downloadSurah(){
+let surah=surahSelect.value;
+let reciter=reciterSelect.value;
+let link=`https://cdn.islamic.network/quran/audio-surah/128/${reciter}/${surah}.mp3`;
+window.open(link,'_blank');
+}
+
+function toggleMode(){
+document.body.classList.toggle("light");
 }
 </script>
-  <body>
-    <header class="hero">
-      <div class="overlay"></div>
-      <nav class="top-nav">
-        <h1>🌙 Quran Kareem</h1>
-        <a href="#resources">Ramadan Resources</a>
-      </nav>
-      <div class="hero-content">
-        <p class="arabic">رَمَضَان كَرِيم</p>
-        <h2>Welcome to a Quran Kareem space for Ramadan</h2>
-        <p>
-          A peaceful and inclusive website for Muslims from all schools and
-          communities to read Quran, remember Allah, and share kindness.
-        </p>
-        <a class="btn" href="#quran">Start Reading</a>
-      </div>
-    </header>
 
-    <main>
-      <section id="quran" class="card">
-        <h3>Daily Quran Reflection</h3>
-        <blockquote>
-          "Indeed, with hardship comes ease." <span>(Quran 94:6)</span>
-        </blockquote>
-        <p>
-          During Ramadan, set aside a few minutes after Fajr or before Iftar to
-          read and reflect on Quran with sincerity.
-        </p>
-      </section>
-
-      <section class="card grid">
-        <article>
-          <h3>Prayer & Worship</h3>
-          <ul>
-            <li>Suhoor reminder</li>
-            <li>Five daily prayers</li>
-            <li>Taraweeh / Qiyam schedule</li>
-            <li>Dua after each salah</li>
-          </ul>
-        </article>
-        <article>
-          <h3>For All Communities</h3>
-          <p>
-            This page welcomes all Muslim communities and legal schools with
-            respect and unity. Our shared goal is taqwa, mercy, and good
-            character.
-          </p>
-        </article>
-      </section>
-
-      <section id="resources" class="card">
-        <h3>Ramadan Checklist</h3>
-        <div class="checklist">
-          <label><input type="checkbox" /> Read at least 1 page of Quran</label>
-          <label><input type="checkbox" /> Give charity (Sadaqah)</label>
-          <label><input type="checkbox" /> Make dua for family and Ummah</label>
-          <label><input type="checkbox" /> Break fast with gratitude</label>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <p>Made with love for Ramadan Kareem • 2026</p>
-    </footer>
-
-    <script src="script.js"></script>
-  </body>
+</body>
 </html>
