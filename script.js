@@ -9,6 +9,7 @@ const loadingState = document.getElementById('loadingState');
 const errorState = document.getElementById('errorState');
 
 const pageSources = [
+  (page) => `https://quran.ksu.edu.sa/png_big/${Number(page)}.png`,
   (page) => `https://raw.githubusercontent.com/quran/quran.com-images/master/Pages/page${page}.png`,
   (page) => `https://cdn.jsdelivr.net/gh/quran/quran.com-images@master/Pages/page${page}.png`,
   (page) => `https://static.qurancdn.com/images/pages/page${Number(page)}.png`,

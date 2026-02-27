@@ -21,6 +21,7 @@ test('styles include global theme variables and responsive controls', () => {
 
 test('script includes image fallback providers and state persistence', () => {
   assert.match(js, /const pageSources = \[/);
+  assert.match(js, /quran\.ksu\.edu\.sa\/png_big/);
   assert.match(js, /localStorage\.setItem\('lastPage'/);
   assert.match(js, /setupPrayerTimes\(\);/);
 });
