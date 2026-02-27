@@ -3,16 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>القرآن الكريم - تلاوة تفاعلية</title>
+<title>القرآن الكريم - عرض تفاعلي</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box}
 
 body{
   background:#0f172a;
@@ -22,8 +18,8 @@ body{
 }
 
 header{
-  padding:20px;
   text-align:center;
+  padding:20px;
   background:#111827;
   border-bottom:1px solid #1f2937;
 }
@@ -42,12 +38,14 @@ header h1{
   background:#0b1220;
 }
 
-select,button{
+select,button,a{
   padding:8px 14px;
   border-radius:8px;
   border:none;
   font-family:"Cairo", sans-serif;
   cursor:pointer;
+  text-decoration:none;
+  text-align:center;
 }
 
 button{
@@ -55,27 +53,39 @@ button{
   font-weight:bold;
 }
 
-.quran-container{
-  max-width:900px;
+.download-btn{
+  background:#22c55e;
+  color:#fff;
+}
+
+.frame{
+  max-width:950px;
   margin:30px auto;
-  padding:25px;
+  padding:20px;
+  background:#111;
+  border:6px solid #d4af37;
+  border-radius:15px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+
+.quran-text{
   line-height:2.3;
-  font-size:28px;
+  font-size:26px;
 }
 
 .ayah{
   cursor:pointer;
-  padding:6px 4px;
-  transition:.3s;
+  padding:5px;
   border-radius:6px;
+  transition:.3s;
 }
 
 .ayah:hover{
-  background:rgba(250,204,21,0.15);
+  background:rgba(250,204,21,.15);
 }
 
 .ayah.active{
-  background:rgba(250,204,21,0.3);
+  background:rgba(250,204,21,.3);
 }
 
 audio{
@@ -83,17 +93,8 @@ audio{
   margin-top:20px;
 }
 
-.loading{
-  text-align:center;
-  margin-top:40px;
-  opacity:.7;
-}
-
 @media(max-width:768px){
-  .quran-container{
-    font-size:22px;
-    padding:15px;
-  }
+  .quran-text{font-size:20px}
 }
 </style>
 </head>
@@ -101,11 +102,15 @@ audio{
 <body>
 
 <header>
-  <h1>📖 القرآن الكريم - استماع تفاعلي</h1>
+  <h1>📖 القرآن الكريم</h1>
 </header>
 
 <div class="controls">
+  <button onclick="prevSurah()">⮕ السورة السابقة</button>
+
   <select id="surahSelect"></select>
+
+  <button onclick="nextSurah()">السورة التالية ⮔</button>
 
   <select id="reciterSelect">
     <option value="Alafasy_128kbps">مشاري العفاسي</option>
@@ -114,11 +119,13 @@ audio{
     <option value="Husary_128kbps">الحصري</option>
   </select>
 
-  <button onclick="loadSurah()">تحميل السورة</button>
+  <a id="downloadBtn" class="download-btn" download>⬇ تحميل السورة</a>
 </div>
 
-<div class="quran-container" id="quranText">
-  <div class="loading">اختر سورة لعرض النص...</div>
+<div class="frame">
+  <div id="quranText" class="quran-text">
+    اختر سورة للعرض...
+  </div>
 </div>
 
 <audio id="audioPlayer" controls></audio>
@@ -128,6 +135,7 @@ const surahSelect = document.getElementById("surahSelect");
 const quranText = document.getElementById("quranText");
 const audioPlayer = document.getElementById("audioPlayer");
 const reciterSelect = document.getElementById("reciterSelect");
+const downloadBtn = document.getElementById("downloadBtn");
 
 let currentSurahData = [];
 
@@ -141,30 +149,31 @@ fetch("https://api.alquran.cloud/v1/surah")
     option.textContent = surah.number + " - " + surah.name;
     surahSelect.appendChild(option);
   });
+  loadSurah();
 });
 
 // تحميل السورة
 function loadSurah(){
   const surahNumber = surahSelect.value;
-  quranText.innerHTML = "<div class='loading'>جاري التحميل...</div>";
+  quranText.innerHTML="جاري التحميل...";
 
-  fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/ar.alafasy`)
+  fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`)
   .then(res=>res.json())
   .then(data=>{
     currentSurahData = data.data.ayahs;
-    renderAyahs(data.data.ayahs);
+    renderAyahs(currentSurahData);
+    updateDownloadLink();
   });
 }
 
 // عرض الآيات
 function renderAyahs(ayahs){
-  quranText.innerHTML = "";
-
+  quranText.innerHTML="";
   ayahs.forEach((ayah,index)=>{
-    let span = document.createElement("span");
+    let span=document.createElement("span");
     span.classList.add("ayah");
-    span.innerHTML = ayah.text + " ﴿" + ayah.numberInSurah + "﴾ ";
-    span.onclick = ()=> playAyah(index);
+    span.innerHTML=ayah.text+" ﴿"+ayah.numberInSurah+"﴾ ";
+    span.onclick=()=>playAyah(index);
     quranText.appendChild(span);
   });
 }
@@ -181,9 +190,34 @@ function playAyah(index){
   const paddedSurah = surah.padStart(3,'0');
   const paddedAyah = ayahNumber.toString().padStart(3,'0');
 
-  audioPlayer.src = `https://everyayah.com/data/${reciter}/${paddedSurah}${paddedAyah}.mp3`;
+  audioPlayer.src=`https://everyayah.com/data/${reciter}/${paddedSurah}${paddedAyah}.mp3`;
   audioPlayer.play();
 }
+
+// تحديث رابط التحميل
+function updateDownloadLink(){
+  const surah = surahSelect.value.padStart(3,'0');
+  const reciter = reciterSelect.value;
+  downloadBtn.href=`https://everyayah.com/data/${reciter}/${surah}001.mp3`;
+}
+
+// السابق / التالي
+function nextSurah(){
+  if(surahSelect.value<114){
+    surahSelect.value=parseInt(surahSelect.value)+1;
+    loadSurah();
+  }
+}
+
+function prevSurah(){
+  if(surahSelect.value>1){
+    surahSelect.value=parseInt(surahSelect.value)-1;
+    loadSurah();
+  }
+}
+
+surahSelect.addEventListener("change",loadSurah);
+reciterSelect.addEventListener("change",updateDownloadLink);
 </script>
 
 </body>
