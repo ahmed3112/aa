@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>المصحف الشريف | منصة تلاوة متكاملة</title>
+    <title>موقع القرآن الكريم | المصحف الشريف 604 صفحة</title>
     <meta
       name="description"
-      content="منصة تلاوة عصرية لعرض صفحات المصحف الشريف كاملة مع استماع ومواقيت الصلاة وحفظ آخر صفحة."
+      content="موقع قرآن احترافي لعرض صفحات المصحف الشريف كاملة مع تلاوة، حفظ آخر صفحة، ومواقيت الصلاة."
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
@@ -16,14 +16,16 @@
   </head>
   <body>
     <header class="site-header">
-      <h1>📖 المصحف الشريف – 604 صفحة كاملة</h1>
-      <p>تصميم احترافي سريع ومتجاوب مع حفظ التقدّم والاستماع للتلاوة.</p>
+      <div class="header-inner">
+        <h1>📖 موقع القرآن الكريم</h1>
+        <p>المصحف الشريف – 604 صفحة كاملة • تصميم واضح • سريع • متجاوب</p>
+      </div>
     </header>
 
     <main class="container">
       <section class="controls" aria-label="أدوات التحكم">
         <label class="control-item">
-          <span>القارئ</span>
+          <span>اختر القارئ</span>
           <select id="reciter">
             <option value="Alafasy_128kbps">مشاري العفاسي</option>
             <option value="Abdurrahmaan_As-Sudais_128kbps">السديس (الحرم)</option>
@@ -34,7 +36,7 @@
         </label>
 
         <label class="control-item small">
-          <span>رقم الصفحة</span>
+          <span>اذهب إلى صفحة</span>
           <input id="pageInput" type="number" min="1" max="604" value="1" />
         </label>
 
@@ -42,22 +44,25 @@
           <button type="button" id="prevBtn">السابق ⮕</button>
           <button type="button" id="nextBtn">⮔ التالي</button>
           <button type="button" id="playBtn" class="primary">🔊 تشغيل</button>
-          <button type="button" id="themeBtn">🌓 المظهر</button>
+          <button type="button" id="themeBtn">☀️ الوضع الفاتح</button>
         </div>
       </section>
 
       <section class="viewer" aria-live="polite">
         <div class="frame" id="frame">
           <img id="moshafPage" alt="صفحة من المصحف الشريف" loading="lazy" />
-          <div id="loadingState" class="status">جاري تحميل الصفحة...</div>
+          <div id="loadingState" class="status">جاري تحميل صفحة المصحف...</div>
           <div id="errorState" class="status error" hidden>
-            تعذر تحميل صورة الصفحة من المزودات الحالية.
+            تعذر تحميل الصفحة الآن. جرّب التنقل أو أعد التحديث.
           </div>
         </div>
         <p class="page-info">الصفحة: <span id="pageNumber">1</span> / 604</p>
       </section>
 
-      <audio id="audioPlayer" controls preload="none"></audio>
+      <section class="audio-panel">
+        <h2>🎧 استماع التلاوة</h2>
+        <audio id="audioPlayer" controls preload="none"></audio>
+      </section>
 
       <section class="prayer-box">
         <h2>🕌 مواعيد الصلاة</h2>

@@ -1,20 +1,23 @@
 :root {
-  --bg: #0a1c31;
-  --bg-elevated: #122c49;
-  --panel: #1a3a5f;
-  --text: #f8fbff;
-  --muted: #bfd3e8;
+  --bg: #071425;
+  --bg-elevated: #0f2a46;
+  --bg-soft: #16395e;
+  --text: #ffffff;
+  --muted: #d4e5f8;
   --accent: #f4c430;
+  --accent-text: #1f2530;
   --danger: #ff6b6b;
-  --radius: 16px;
+  --line: rgb(255 255 255 / 15%);
+  --radius: 18px;
 }
 
 body.light {
-  --bg: #eef4fc;
+  --bg: #edf4fb;
   --bg-elevated: #ffffff;
-  --panel: #e8f0fb;
-  --text: #10243b;
-  --muted: #47607c;
+  --bg-soft: #e7f0fb;
+  --text: #0f2740;
+  --muted: #2f4b68;
+  --line: rgb(16 39 64 / 12%);
 }
 
 * {
@@ -25,43 +28,52 @@ body {
   margin: 0;
   font-family: "Cairo", system-ui, sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top, #12365a, var(--bg) 60%);
+  background: linear-gradient(180deg, #0d2d4c, var(--bg));
   min-height: 100vh;
 }
 
 .site-header {
+  background: linear-gradient(135deg, #0a2c4a, #0b2036);
+  border-bottom: 1px solid var(--line);
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.2rem 1rem;
   text-align: center;
-  padding: 1.25rem 1rem;
-  background: linear-gradient(135deg, #09223c, #10385c);
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
 .site-header h1 {
   margin: 0;
-  font-size: clamp(1.35rem, 4vw, 2.2rem);
+  font-size: clamp(1.5rem, 4.5vw, 2.3rem);
 }
 
 .site-header p {
-  margin: 0.4rem 0 0;
+  margin: 0.35rem 0 0;
   color: var(--muted);
+  font-weight: 600;
 }
 
 .container {
   max-width: 1100px;
-  margin: 1.25rem auto;
+  margin: 1.2rem auto;
   padding: 0 1rem 2rem;
 }
 
 .controls,
+.frame,
+.audio-panel,
 .prayer-box {
   background: var(--bg-elevated);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: 0 12px 34px rgb(0 0 0 / 25%);
+  box-shadow: 0 14px 35px rgb(0 0 0 / 25%);
 }
 
 .controls {
   display: grid;
-  grid-template-columns: 1.4fr 0.6fr 1.8fr;
+  grid-template-columns: 1.3fr 0.6fr 1.7fr;
   gap: 0.75rem;
   padding: 1rem;
   align-items: end;
@@ -70,26 +82,29 @@ body {
 .control-item {
   display: grid;
   gap: 0.35rem;
-  text-align: right;
 }
 
 .control-item span {
   color: var(--muted);
   font-size: 0.95rem;
+  font-weight: 700;
 }
 
 select,
 input,
 button {
-  border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: inherit;
   font-size: 1.05rem;
 }
 
 select,
 input {
-  padding: 0.7rem;
+  border: 1px solid var(--line);
+  padding: 0.72rem;
+  background: #fff;
+  color: #111;
+  font-weight: 700;
 }
 
 .buttons {
@@ -99,15 +114,17 @@ input {
 }
 
 button {
+  border: 1px solid transparent;
   cursor: pointer;
-  padding: 0.7rem 1rem;
-  background: #d5dfec;
-  color: #09223c;
-  font-weight: 700;
+  padding: 0.72rem 1rem;
+  background: #e4ecf6;
+  color: #0a2138;
+  font-weight: 800;
 }
 
 button.primary {
   background: var(--accent);
+  color: var(--accent-text);
 }
 
 button:hover {
@@ -116,32 +133,34 @@ button:hover {
 
 .viewer {
   margin-top: 1rem;
-  text-align: center;
 }
 
 .frame {
   position: relative;
-  background: #06101b;
-  border-radius: var(--radius);
-  padding: 0.85rem;
-  min-height: 260px;
+  min-height: 300px;
+  padding: 1rem;
   display: grid;
   place-items: center;
+  background: #03101f;
 }
 
 .frame img {
   width: min(100%, 880px);
+  display: block;
   border-radius: 12px;
   background: #000;
 }
 
 .status {
   position: absolute;
-  bottom: 1.2rem;
-  background: rgb(0 0 0 / 62%);
+  top: 1rem;
+  right: 50%;
+  transform: translateX(50%);
+  background: rgb(0 0 0 / 70%);
   color: #fff;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 999px;
+  font-weight: 700;
 }
 
 .error {
@@ -149,26 +168,41 @@ button:hover {
 }
 
 .page-info {
-  font-size: 1.3rem;
-  margin: 0.8rem 0;
+  margin: 0.85rem 0;
+  text-align: center;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text);
 }
 
-audio {
-  width: 100%;
-  margin-top: 0.6rem;
-}
-
+.audio-panel,
 .prayer-box {
   margin-top: 1rem;
   padding: 1rem;
 }
 
+.audio-panel h2,
+.prayer-box h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+audio {
+  width: 100%;
+}
+
 #prayerTimes {
-  line-height: 1.9;
+  line-height: 2;
+  font-weight: 700;
+  color: var(--text);
 }
 
 @media (max-width: 900px) {
   .controls {
     grid-template-columns: 1fr;
+  }
+
+  .page-info {
+    font-size: 1.3rem;
   }
 }

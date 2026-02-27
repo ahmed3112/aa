@@ -125,13 +125,19 @@ function setupPrayerTimes() {
 function setupTheme() {
   const themeBtn = document.getElementById('themeBtn');
   const savedTheme = localStorage.getItem('theme');
+  const applyLabel = () => {
+    themeBtn.textContent = document.body.classList.contains('light') ? '🌙 الوضع الليلي' : '☀️ الوضع الفاتح';
+  };
+
   if (savedTheme === 'light') {
     document.body.classList.add('light');
   }
+  applyLabel();
 
   themeBtn.addEventListener('click', () => {
     document.body.classList.toggle('light');
     localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    applyLabel();
   });
 }
 
