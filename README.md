@@ -14,15 +14,26 @@ It runs:
 
 ## Cisco 9200/9500 Daily Backup Tools
 
-This repository now includes simple tools to back up Cisco Catalyst 9200 and 9500 switches daily.
+This repository includes backup tools for Cisco Catalyst 9200 and 9500 with support for:
+- IP ranges and CIDR
+- username/password login
+- enable mode password
+- desktop GUI launcher
 
 ### Files
-- `tools/cisco_backup.py`: Runs SSH commands and saves backup outputs.
-- `tools/devices.example.json`: Example inventory for switches.
+- `tools/cisco_backup.py`: Main backup CLI tool.
+- `tools/cisco_backup_desktop.py`: Desktop GUI tool.
+- `tools/devices.example.json`: Example inventory with single IP and IP range.
 - `tools/install_daily_cron.sh`: Installs a daily cron schedule.
 
+### Python dependency
+Install Paramiko first:
+
+```bash
+pip install paramiko
+```
+
 ### 1) Create inventory file
-Copy and edit inventory:
 
 ```bash
 cp tools/devices.example.json tools/devices.json
@@ -34,14 +45,19 @@ cp tools/devices.example.json tools/devices.json
 python3 tools/cisco_backup.py --inventory tools/devices.json --output-dir backups
 ```
 
-### 3) Schedule daily backup
-Install cron entry at 02:00 (default):
+### 3) Run desktop tool
 
 ```bash
-./tools/install_daily_cron.sh tools/devices.json
+python3 tools/cisco_backup_desktop.py
 ```
 
-Or choose time, e.g. 01:30:
+Then add:
+- IPs (`10.10.10.10-10.10.10.20` or `10.10.20.0/24` or comma-separated mix)
+- username
+- password
+- enable password
+
+### 4) Schedule daily backup
 
 ```bash
 ./tools/install_daily_cron.sh tools/devices.json 01:30

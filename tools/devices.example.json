@@ -4,12 +4,16 @@
       "name": "core-9500-1",
       "host": "10.10.10.10",
       "username": "backupuser",
+      "password": "YOUR_LOGIN_PASSWORD",
+      "enable_password": "YOUR_ENABLE_PASSWORD",
       "model": "C9500"
     },
     {
-      "name": "access-9200-1",
-      "host": "10.10.20.10",
+      "name_prefix": "access-9200",
+      "ip_range": "10.10.20.10-10.10.20.20,10.10.30.0/30",
       "username": "backupuser",
+      "password": "YOUR_LOGIN_PASSWORD",
+      "enable_password": "YOUR_ENABLE_PASSWORD",
       "model": "C9200"
     }
   ]
