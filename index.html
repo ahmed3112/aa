@@ -1,88 +1,170 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>موقع القرآن الكريم | المصحف الشريف 604 صفحة</title>
-    <meta
-      name="description"
-      content="موقع قرآن عربي احترافي لعرض المصحف الشريف صفحات كاملة مع القراءة النصية، التلاوة، ومواقيت الصلاة."
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <div class="header-inner">
-        <h1>📖 موقع القرآن الكريم</h1>
-        <p>المصحف الشريف – 604 صفحة كاملة • عربي واضح • تصميم احترافي</p>
-      </div>
-    </header>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>المصحف الشريف | تصميم احترافي</title>
 
-    <main class="container">
-      <section class="controls" aria-label="أدوات التحكم">
-        <label class="control-item">
-          <span>اختر القارئ</span>
-          <select id="reciter">
-            <option value="Alafasy_128kbps">مشاري العفاسي</option>
-            <option value="Abdurrahmaan_As-Sudais_128kbps">السديس (الحرم)</option>
-            <option value="Maher_AlMuaiqly_128kbps">ماهر المعيقلي (الحرم)</option>
-            <option value="Husary_128kbps">الحصري (مصر)</option>
-            <option value="Minshawy_Murattal_128kbps">المنشاوي (مصر)</option>
-          </select>
-        </label>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 
-        <label class="control-item small">
-          <span>اذهب إلى صفحة</span>
-          <input id="pageInput" type="number" min="1" max="604" value="1" />
-        </label>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Cairo", sans-serif;
+}
 
-        <div class="buttons">
-          <button type="button" id="prevBtn">السابق ⮕</button>
-          <button type="button" id="nextBtn">⮔ التالي</button>
-          <button type="button" id="playBtn" class="primary">🔊 تشغيل</button>
-          <button type="button" id="themeBtn">☀️ الوضع الفاتح</button>
-        </div>
-      </section>
+body{
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+  color:#fff;
+}
 
-      <section class="viewer" aria-live="polite">
-        <div class="frame" id="frame">
-          <img id="moshafPage" alt="صفحة من المصحف الشريف" loading="lazy" />
-          <div id="loadingState" class="status">جاري تحميل صفحة المصحف...</div>
-          <div id="errorState" class="status error" hidden>
-            تعذر تحميل الصفحة الآن. جرّب التنقل أو أعد التحديث.
-          </div>
-        </div>
-        <p class="page-info">الصفحة: <span id="pageNumber">1</span> / 604</p>
-      </section>
+/* Header */
+.header{
+  text-align:center;
+  margin-bottom:25px;
+}
 
-      <section class="audio-panel">
-        <h2>🎧 استماع التلاوة</h2>
-        <audio id="audioPlayer" controls preload="none"></audio>
-      </section>
+.header h1{
+  font-size:28px;
+  font-weight:800;
+  margin-bottom:5px;
+}
 
-      <section class="text-panel">
-        <div class="text-tools">
-          <h2>📚 القراءة النصية للقرآن</h2>
-          <label>
-            <span>السورة</span>
-            <select id="textSurah"></select>
-          </label>
-          <button type="button" id="loadSurahBtn">تحميل السورة</button>
-        </div>
-        <p id="textStatus">اختر سورة لعرض النص العربي بشكل واضح.</p>
-        <article id="quranTextContainer" class="quran-text" aria-live="polite"></article>
-      </section>
+.header p{
+  opacity:.8;
+  font-size:14px;
+}
 
-      <section class="prayer-box">
-        <h2>🕌 مواعيد الصلاة</h2>
-        <div id="prayerTimes">جاري تحميل المواقيت...</div>
-      </section>
-    </main>
+/* Controls */
+.controls{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(10px);
+  padding:15px 20px;
+  border-radius:15px;
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-bottom:25px;
+}
 
-    <script src="script.js"></script>
-  </body>
+.controls button,
+.controls input{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.controls button{
+  background:#ffd700;
+  font-weight:600;
+}
+
+.controls input{
+  width:80px;
+  text-align:center;
+}
+
+/* Mushaf Frame */
+.mushaf-wrapper{
+  background:#111;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+.mushaf-frame{
+  border:8px solid #d4af37;
+  border-radius:12px;
+  padding:15px;
+  background:#000;
+}
+
+.mushaf-frame img{
+  width:100%;
+  max-width:700px;
+  border-radius:6px;
+  display:block;
+}
+
+/* Page Number */
+.page-info{
+  text-align:center;
+  margin-top:15px;
+  font-size:16px;
+  font-weight:600;
+}
+
+/* Responsive */
+@media(max-width:768px){
+  .mushaf-frame img{
+    max-width:100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>📖 المصحف الشريف</h1>
+  <p>604 صفحة كاملة – عرض احترافي مريح للعين</p>
+</div>
+
+<div class="controls">
+  <button onclick="prevPage()">السابق</button>
+  <input type="number" id="pageInput" min="1" max="604" value="1">
+  <button onclick="goToPage()">اذهب</button>
+  <button onclick="nextPage()">التالي</button>
+</div>
+
+<div class="mushaf-wrapper">
+  <div class="mushaf-frame">
+    <img id="mushafImage" src="https://quran.ksu.edu.sa/png_big/1.png" alt="صفحة المصحف">
+  </div>
+  <div class="page-info">
+    الصفحة: <span id="pageNumber">1</span> / 604
+  </div>
+</div>
+
+<script>
+let currentPage = 1;
+
+function updatePage(){
+  if(currentPage < 1) currentPage = 1;
+  if(currentPage > 604) currentPage = 604;
+
+  document.getElementById("mushafImage").src =
+    "https://quran.ksu.edu.sa/png_big/" + currentPage + ".png";
+
+  document.getElementById("pageNumber").innerText = currentPage;
+  document.getElementById("pageInput").value = currentPage;
+}
+
+function nextPage(){
+  currentPage++;
+  updatePage();
+}
+
+function prevPage(){
+  currentPage--;
+  updatePage();
+}
+
+function goToPage(){
+  currentPage = parseInt(document.getElementById("pageInput").value);
+  updatePage();
+}
+</script>
+
+</body>
 </html>
