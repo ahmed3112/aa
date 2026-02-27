@@ -1,0 +1,16 @@
+{
+  "devices": [
+    {
+      "name": "core-9500-1",
+      "host": "10.10.10.10",
+      "username": "backupuser",
+      "model": "C9500"
+    },
+    {
+      "name": "access-9200-1",
+      "host": "10.10.20.10",
+      "username": "backupuser",
+      "model": "C9200"
+    }
+  ]
+}
