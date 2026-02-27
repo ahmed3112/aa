@@ -8,6 +8,11 @@ const audio = document.getElementById('audioPlayer');
 const loadingState = document.getElementById('loadingState');
 const errorState = document.getElementById('errorState');
 
+const textSurah = document.getElementById('textSurah');
+const textStatus = document.getElementById('textStatus');
+const quranTextContainer = document.getElementById('quranTextContainer');
+const loadSurahBtn = document.getElementById('loadSurahBtn');
+
 const pageSources = [
   (page) => `https://quran.ksu.edu.sa/png_big/${Number(page)}.png`,
   (page) => `https://raw.githubusercontent.com/quran/quran.com-images/master/Pages/page${page}.png`,
@@ -49,7 +54,7 @@ async function loadPage() {
       updatePageState();
       return;
     } catch {
-      // Try next provider.
+      // next source
     }
   }
 
@@ -69,10 +74,7 @@ function movePage(step) {
 
 function goToPage(page) {
   const parsed = Number(page);
-  if (!Number.isInteger(parsed)) {
-    return;
-  }
-
+  if (!Number.isInteger(parsed)) return;
   currentPage = Math.min(totalPages, Math.max(1, parsed));
   loadPage();
 }
@@ -82,11 +84,8 @@ function playSurah() {
   let surah = Math.ceil(currentPage / 5);
   surah = Math.min(114, Math.max(1, surah));
   const surahCode = String(surah).padStart(3, '0');
-
   audio.src = `https://everyayah.com/data/${reciter}/${surahCode}001.mp3`;
-  audio.play().catch(() => {
-    // Browser may block autoplay without user interaction.
-  });
+  audio.play().catch(() => {});
 }
 
 function setupPrayerTimes() {
@@ -104,13 +103,7 @@ function setupPrayerTimes() {
         );
         const data = await response.json();
         const t = data.data.timings;
-        prayerTimes.innerHTML = `
-          الفجر: ${t.Fajr}<br>
-          الظهر: ${t.Dhuhr}<br>
-          العصر: ${t.Asr}<br>
-          المغرب: ${t.Maghrib}<br>
-          العشاء: ${t.Isha}
-        `;
+        prayerTimes.innerHTML = `الفجر: ${t.Fajr}<br>الظهر: ${t.Dhuhr}<br>العصر: ${t.Asr}<br>المغرب: ${t.Maghrib}<br>العشاء: ${t.Isha}`;
       } catch {
         prayerTimes.textContent = 'تعذر جلب المواقيت حالياً، حاول لاحقاً.';
       }
@@ -129,9 +122,7 @@ function setupTheme() {
     themeBtn.textContent = document.body.classList.contains('light') ? '🌙 الوضع الليلي' : '☀️ الوضع الفاتح';
   };
 
-  if (savedTheme === 'light') {
-    document.body.classList.add('light');
-  }
+  if (savedTheme === 'light') document.body.classList.add('light');
   applyLabel();
 
   themeBtn.addEventListener('click', () => {
@@ -141,29 +132,64 @@ function setupTheme() {
   });
 }
 
+function renderAyat(ayahs) {
+  quranTextContainer.innerHTML = ayahs
+    .map((ayah) => `<span class="ayah">${ayah.text}</span><span class="ayah-num">﴿${ayah.numberInSurah}﴾</span>`)
+    .join(' ');
+}
+
+async function loadTextSurah() {
+  const surahId = Number(textSurah.value);
+  if (!surahId) return;
+
+  textStatus.textContent = 'جاري تحميل السورة...';
+  quranTextContainer.innerHTML = '';
+
+  try {
+    const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/quran-uthmani`);
+    const payload = await response.json();
+    renderAyat(payload.data.ayahs);
+    textStatus.textContent = `تم تحميل سورة ${payload.data.name} (${payload.data.numberOfAyahs} آية).`;
+    localStorage.setItem('lastTextSurah', String(surahId));
+  } catch {
+    textStatus.textContent = 'تعذر تحميل السورة الآن. حاول مرة أخرى.';
+  }
+}
+
+async function setupTextQuran() {
+  try {
+    const response = await fetch('https://api.alquran.cloud/v1/surah');
+    const payload = await response.json();
+    textSurah.innerHTML = payload.data
+      .map((surah) => `<option value="${surah.number}">${surah.number}. ${surah.name}</option>`)
+      .join('');
+
+    const saved = Number(localStorage.getItem('lastTextSurah') || '18');
+    textSurah.value = String(saved);
+    await loadTextSurah();
+  } catch {
+    textStatus.textContent = 'تعذر تحميل قائمة السور حالياً.';
+  }
+}
+
 function setupEvents() {
   document.getElementById('nextBtn').addEventListener('click', () => movePage(1));
   document.getElementById('prevBtn').addEventListener('click', () => movePage(-1));
   document.getElementById('playBtn').addEventListener('click', playSurah);
-
   pageInput.addEventListener('change', (event) => goToPage(event.target.value));
+  loadSurahBtn.addEventListener('click', loadTextSurah);
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowRight') {
-      movePage(-1);
-    }
-    if (event.key === 'ArrowLeft') {
-      movePage(1);
-    }
+    if (event.key === 'ArrowRight') movePage(-1);
+    if (event.key === 'ArrowLeft') movePage(1);
   });
 }
 
 const savedPage = Number.parseInt(localStorage.getItem('lastPage') || '1', 10);
-if (Number.isInteger(savedPage) && savedPage >= 1 && savedPage <= totalPages) {
-  currentPage = savedPage;
-}
+if (Number.isInteger(savedPage) && savedPage >= 1 && savedPage <= totalPages) currentPage = savedPage;
 
 setupEvents();
 setupTheme();
 setupPrayerTimes();
+setupTextQuran();
 loadPage();

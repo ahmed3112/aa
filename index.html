@@ -6,10 +6,10 @@
     <title>موقع القرآن الكريم | المصحف الشريف 604 صفحة</title>
     <meta
       name="description"
-      content="موقع قرآن احترافي لعرض صفحات المصحف الشريف كاملة مع تلاوة، حفظ آخر صفحة، ومواقيت الصلاة."
+      content="موقع قرآن عربي احترافي لعرض المصحف الشريف صفحات كاملة مع القراءة النصية، التلاوة، ومواقيت الصلاة."
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -18,7 +18,7 @@
     <header class="site-header">
       <div class="header-inner">
         <h1>📖 موقع القرآن الكريم</h1>
-        <p>المصحف الشريف – 604 صفحة كاملة • تصميم واضح • سريع • متجاوب</p>
+        <p>المصحف الشريف – 604 صفحة كاملة • عربي واضح • تصميم احترافي</p>
       </div>
     </header>
 
@@ -62,6 +62,19 @@
       <section class="audio-panel">
         <h2>🎧 استماع التلاوة</h2>
         <audio id="audioPlayer" controls preload="none"></audio>
+      </section>
+
+      <section class="text-panel">
+        <div class="text-tools">
+          <h2>📚 القراءة النصية للقرآن</h2>
+          <label>
+            <span>السورة</span>
+            <select id="textSurah"></select>
+          </label>
+          <button type="button" id="loadSurahBtn">تحميل السورة</button>
+        </div>
+        <p id="textStatus">اختر سورة لعرض النص العربي بشكل واضح.</p>
+        <article id="quranTextContainer" class="quran-text" aria-live="polite"></article>
       </section>
 
       <section class="prayer-box">
