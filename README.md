@@ -1,14 +1,13 @@
-# Quran Kareem - 604 Page Viewer
+# Cisco Switch Backup Tool (Ultra UI)
 
-A modern Arabic web experience for reading the full Mushaf (604 pages), listening to recitations, and viewing prayer times.
+A polished web UI prototype for a **C# ASP.NET backup application** that targets Cisco switches.
 
-## Features
+## What it does
 
-- Full page navigation with saved progress in `localStorage`.
-- Multi-source image fallback to reduce page-load failures.
-- Reciter selection + quick surah audio playback.
-- Prayer times from Aladhan API using geolocation.
-- Responsive design with optional light/dark theme.
+- Queue a backup job with Cisco connection details (IP, credentials, protocol, config type).
+- Show a live API payload preview for `POST /api/backups`.
+- Track backup history in browser storage.
+- Download a generated `.cfg` file for each backup entry.
 
 ## Run locally
 
@@ -16,7 +15,27 @@ A modern Arabic web experience for reading the full Mushaf (604 pages), listenin
 python3 -m http.server 4173
 ```
 
-Then open `http://localhost:4173`.
+Open <http://localhost:4173>.
+
+## Suggested C# backend contract
+
+```csharp
+app.MapPost("/api/backups", async (BackupRequest request, IBackupService svc) =>
+{
+    var result = await svc.RunCiscoBackupAsync(request);
+    return Results.Ok(result);
+});
+
+public record BackupRequest(
+    string DeviceName,
+    string IpAddress,
+    string Username,
+    string Password,
+    string EnableSecret,
+    string Protocol,
+    string ConfigType,
+    string ScheduleType);
+```
 
 ## Tests
 
