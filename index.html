@@ -1,191 +1,88 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>المصحف الشريف 604 صفحة</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>موقع القرآن الكريم | المصحف الشريف 604 صفحة</title>
+    <meta
+      name="description"
+      content="موقع قرآن عربي احترافي لعرض المصحف الشريف صفحات كاملة مع القراءة النصية، التلاوة، ومواقيت الصلاة."
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <h1>📖 موقع القرآن الكريم</h1>
+        <p>المصحف الشريف – 604 صفحة كاملة • عربي واضح • تصميم احترافي</p>
+      </div>
+    </header>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <main class="container">
+      <section class="controls" aria-label="أدوات التحكم">
+        <label class="control-item">
+          <span>اختر القارئ</span>
+          <select id="reciter">
+            <option value="Alafasy_128kbps">مشاري العفاسي</option>
+            <option value="Abdurrahmaan_As-Sudais_128kbps">السديس (الحرم)</option>
+            <option value="Maher_AlMuaiqly_128kbps">ماهر المعيقلي (الحرم)</option>
+            <option value="Husary_128kbps">الحصري (مصر)</option>
+            <option value="Minshawy_Murattal_128kbps">المنشاوي (مصر)</option>
+          </select>
+        </label>
 
-<style>
-body{
-margin:0;
-background:#0b1c2d;
-font-family:'Cairo',sans-serif;
-color:white;
-text-align:center;
-transition:.3s;
-}
+        <label class="control-item small">
+          <span>اذهب إلى صفحة</span>
+          <input id="pageInput" type="number" min="1" max="604" value="1" />
+        </label>
 
-header{
-padding:20px;
-background:linear-gradient(135deg,#0b1c2d,#102c44);
-font-size:22px;
-}
+        <div class="buttons">
+          <button type="button" id="prevBtn">السابق ⮕</button>
+          <button type="button" id="nextBtn">⮔ التالي</button>
+          <button type="button" id="playBtn" class="primary">🔊 تشغيل</button>
+          <button type="button" id="themeBtn">☀️ الوضع الفاتح</button>
+        </div>
+      </section>
 
-.container{
-margin:20px auto;
-max-width:1000px;
-background:#162f4a;
-padding:20px;
-border-radius:15px;
-box-shadow:0 0 25px rgba(0,0,0,.6);
-}
+      <section class="viewer" aria-live="polite">
+        <div class="frame" id="frame">
+          <img id="moshafPage" alt="صفحة من المصحف الشريف" loading="lazy" />
+          <div id="loadingState" class="status">جاري تحميل صفحة المصحف...</div>
+          <div id="errorState" class="status error" hidden>
+            تعذر تحميل الصفحة الآن. جرّب التنقل أو أعد التحديث.
+          </div>
+        </div>
+        <p class="page-info">الصفحة: <span id="pageNumber">1</span> / 604</p>
+      </section>
 
-.frame{
-background:black;
-padding:15px;
-border-radius:15px;
-display:inline-block;
-}
+      <section class="audio-panel">
+        <h2>🎧 استماع التلاوة</h2>
+        <audio id="audioPlayer" controls preload="none"></audio>
+      </section>
 
-.frame img{
-width:100%;
-max-width:900px;
-border-radius:10px;
-}
+      <section class="text-panel">
+        <div class="text-tools">
+          <h2>📚 القراءة النصية للقرآن</h2>
+          <label>
+            <span>السورة</span>
+            <select id="textSurah"></select>
+          </label>
+          <button type="button" id="loadSurahBtn">تحميل السورة</button>
+        </div>
+        <p id="textStatus">اختر سورة لعرض النص العربي بشكل واضح.</p>
+        <article id="quranTextContainer" class="quran-text" aria-live="polite"></article>
+      </section>
 
-.controls{
-margin:15px 0;
-}
+      <section class="prayer-box">
+        <h2>🕌 مواعيد الصلاة</h2>
+        <div id="prayerTimes">جاري تحميل المواقيت...</div>
+      </section>
+    </main>
 
-button,select{
-padding:8px 15px;
-margin:5px;
-border:none;
-border-radius:8px;
-font-family:'Cairo';
-}
-
-button{
-background:#f4c430;
-font-weight:bold;
-cursor:pointer;
-}
-
-button:hover{opacity:.85}
-
-audio{
-margin-top:15px;
-width:95%;
-max-width:650px;
-}
-
-.page-info{
-margin-top:10px;
-font-size:18px;
-}
-
-.prayer-box{
-margin-top:25px;
-padding:15px;
-background:#203c5c;
-border-radius:10px;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-📖 المصحف الشريف – 604 صفحة كاملة
-</header>
-
-<div class="container">
-
-<div class="controls">
-<select id="reciter">
-<option value="Alafasy_128kbps">مشاري العفاسي</option>
-<option value="Abdurrahmaan_As-Sudais_128kbps">السديس (الحرم)</option>
-<option value="Maher_AlMuaiqly_128kbps">ماهر المعيقلي (الحرم)</option>
-<option value="Husary_128kbps">الحصري (مصر)</option>
-<option value="Minshawy_Murattal_128kbps">المنشاوي (مصر)</option>
-</select>
-
-<button onclick="prevPage()">⬅ السابق</button>
-<button onclick="nextPage()">التالي ➡</button>
-<button onclick="playSurah()">🔊 تشغيل</button>
-</div>
-
-<div class="frame">
-<img id="moshafPage">
-</div>
-
-<div class="page-info">
-الصفحة: <span id="pageNumber">1</span> / 604
-</div>
-
-<audio id="audioPlayer" controls></audio>
-
-<div class="prayer-box">
-<h3>🕌 مواعيد الصلاة</h3>
-<div id="prayerTimes">جاري تحميل المواقيت...</div>
-</div>
-
-</div>
-
-<script>
-
-let currentPage = 1;
-const totalPages = 604;
-const img = document.getElementById("moshafPage");
-const pageNumber = document.getElementById("pageNumber");
-const audio = document.getElementById("audioPlayer");
-
-function loadPage(){
-let formatted = String(currentPage).padStart(3,'0');
-img.src = `https://raw.githubusercontent.com/quran/quran.com-images/master/Pages/page${formatted}.png`;
-pageNumber.textContent = currentPage;
-localStorage.setItem("lastPage",currentPage);
-}
-
-function nextPage(){
-if(currentPage < totalPages){
-currentPage++;
-loadPage();
-}
-}
-
-function prevPage(){
-if(currentPage > 1){
-currentPage--;
-loadPage();
-}
-}
-
-// تشغيل السورة حسب الصفحة (تقريب ذكي)
-function playSurah(){
-let reciter=document.getElementById("reciter").value;
-let surah=Math.ceil(currentPage/5);
-if(surah>114) surah=114;
-let s=String(surah).padStart(3,'0');
-audio.src=`https://everyayah.com/data/${reciter}/${s}001.mp3`;
-audio.play();
-}
-
-// تحميل آخر صفحة محفوظة
-let saved=localStorage.getItem("lastPage");
-if(saved){currentPage=parseInt(saved);}
-loadPage();
-
-// مواقيت الصلاة
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(pos=>{
-fetch(`https://api.aladhan.com/v1/timings?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=5`)
-.then(r=>r.json())
-.then(d=>{
-let t=d.data.timings;
-document.getElementById("prayerTimes").innerHTML=
-`الفجر: ${t.Fajr}<br>
-الظهر: ${t.Dhuhr}<br>
-العصر: ${t.Asr}<br>
-المغرب: ${t.Maghrib}<br>
-العشاء: ${t.Isha}`;
-});
-});
-}
-
-</script>
-
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
