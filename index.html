@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>المصحف Ultra Elite 604</title>
+<title>المصحف الشريف 604 صفحة</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
@@ -25,11 +25,11 @@ font-size:22px;
 
 .container{
 margin:20px auto;
-max-width:950px;
+max-width:1000px;
 background:#162f4a;
 padding:20px;
 border-radius:15px;
-box-shadow:0 0 30px rgba(0,0,0,.6);
+box-shadow:0 0 25px rgba(0,0,0,.6);
 }
 
 .frame{
@@ -37,17 +37,18 @@ background:black;
 padding:15px;
 border-radius:15px;
 display:inline-block;
+overflow:hidden;
 }
 
 .frame img{
 width:100%;
-max-width:850px;
+max-width:900px;
 border-radius:10px;
 transition:.3s;
 }
 
 .controls{
-margin-top:15px;
+margin:15px 0;
 }
 
 button,select{
@@ -84,10 +85,6 @@ background:#203c5c;
 border-radius:10px;
 }
 
-.zoom{
-margin-top:10px;
-}
-
 .light{
 background:#f5f5f5;
 color:black;
@@ -119,15 +116,15 @@ color:black;
 
 <button onclick="prevPage()">⬅ السابق</button>
 <button onclick="nextPage()">التالي ➡</button>
-<button onclick="playPage()">🔊 تشغيل</button>
+<button onclick="playSurah()">🔊 تشغيل</button>
 <button onclick="toggleMode()">🌙 / ☀</button>
 </div>
 
 <div class="frame">
-<img id="moshafPage" src="">
+<img id="moshafPage">
 </div>
 
-<div class="zoom">
+<div class="controls">
 <button onclick="zoomIn()">تكبير +</button>
 <button onclick="zoomOut()">تصغير -</button>
 </div>
@@ -147,75 +144,82 @@ color:black;
 
 <script>
 
-let currentPage=1;
-let zoomLevel=1;
-const totalPages=604;
-const pageImg=document.getElementById("moshafPage");
-const pageNumber=document.getElementById("pageNumber");
-const audioPlayer=document.getElementById("audioPlayer");
+let currentPage = 1;
+let zoomLevel = 1;
+const totalPages = 604;
+const img = document.getElementById("moshafPage");
+const pageNumber = document.getElementById("pageNumber");
+const audio = document.getElementById("audioPlayer");
 
-// خريطة تقريبية دقيقة لربط الصفحة بالسورة
-const surahPageMap=[
-1,2,50,77,106,128,151,177,187,208,221,235,249,255,262,267,282,293,305,312,
-322,332,342,350,359,367,377,385,396,404,411,415,418,428,434,440,446,453,
-458,467,477,483,489,496,499,502,507,511,515,518,520,523,526,528,531,534,
-537,542,545,549,551,553,554,556,558,560,562,564,566,568,570,572,574,575,
-577,578,580,582,583,585,586,587,589,590,591,592,593,594,595,596,597,598,
-599,600,601,601,602,602,603,603,604,604,604,604,604,604,604,604,604,604,
-604,604,604,604,604,604
-];
-
-function getSurahFromPage(page){
-for(let i=0;i<surahPageMap.length;i++){
-if(page<surahPageMap[i]) return i;
-}
-return 114;
-}
-
+// تحميل صفحة (مصدر ثابت شغال)
 function loadPage(){
-let formatted=String(currentPage).padStart(3,'0');
-pageImg.src=`https://everyayah.com/data/quranpngs/page${formatted}.png`;
-pageNumber.textContent=currentPage;
+let formatted = String(currentPage).padStart(3,'0');
+img.src = `https://everyayah.com/data/quranpngs/page${formatted}.png`;
+pageNumber.textContent = currentPage;
 localStorage.setItem("lastPage",currentPage);
 }
 
 function nextPage(){
-if(currentPage<totalPages){
+if(currentPage < totalPages){
 currentPage++;
 loadPage();
 }
 }
 
 function prevPage(){
-if(currentPage>1){
+if(currentPage > 1){
 currentPage--;
 loadPage();
 }
 }
 
-function playPage(){
+// ربط الصفحة بالسورة بدقة تقريبية محسنة
+function getSurah(page){
+const map=[1,2,50,77,106,128,151,177,187,208,221,235,249,255,262,267,282,293,305,312,
+322,332,342,350,359,367,377,385,396,404,411,415,418,428,434,440,446,453,
+458,467,477,483,489,496,499,502,507,511,515,518,520,523,526,528,531,534,
+537,542,545,549,551,553,554,556,558,560,562,564,566,568,570,572,574,575,
+577,578,580,582,583,585,586,587,589,590,591,592,593,594,595,596,597,598,
+599,600,601,601,602,602,603,603,604,604,604,604,604,604,604,604,604,604,
+604,604,604,604,604,604];
+for(let i=0;i<map.length;i++){
+if(page<map[i]) return i;
+}
+return 114;
+}
+
+function playSurah(){
 let reciter=document.getElementById("reciter").value;
-let surah=getSurahFromPage(currentPage);
-let surahNum=String(surah).padStart(3,'0');
-audioPlayer.src=`https://everyayah.com/data/${reciter}/${surahNum}001.mp3`;
-audioPlayer.play();
+let surah=getSurah(currentPage);
+let s=String(surah).padStart(3,'0');
+audio.src=`https://everyayah.com/data/${reciter}/${s}001.mp3`;
+audio.play();
 }
 
 function zoomIn(){
 zoomLevel+=0.1;
-pageImg.style.transform=`scale(${zoomLevel})`;
+img.style.transform=`scale(${zoomLevel})`;
 }
 
 function zoomOut(){
 zoomLevel-=0.1;
-pageImg.style.transform=`scale(${zoomLevel})`;
+img.style.transform=`scale(${zoomLevel})`;
 }
 
 function toggleMode(){
 document.body.classList.toggle("light");
 }
 
-// تحميل آخر صفحة محفوظة
+// Swipe Mobile
+let startX=0;
+img.addEventListener("touchstart",e=>startX=e.touches[0].clientX);
+img.addEventListener("touchend",e=>{
+let diff=e.changedTouches[0].clientX-startX;
+if(diff>50) prevPage();
+if(diff<-50) nextPage();
+});
+
+// تحميل آخر صفحة
 let saved=localStorage.getItem("lastPage");
 if(saved){currentPage=parseInt(saved);}
 loadPage();
