@@ -1,113 +1,98 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>المصحف الشريف | تصميم احترافي</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>القرآن الكريم - تلاوة تفاعلية</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:"Cairo", sans-serif;
 }
 
 body{
-  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:20px;
+  background:#0f172a;
   color:#fff;
+  font-family:"Amiri", serif;
+  min-height:100vh;
 }
 
-/* Header */
-.header{
+header{
+  padding:20px;
   text-align:center;
-  margin-bottom:25px;
+  background:#111827;
+  border-bottom:1px solid #1f2937;
 }
 
-.header h1{
-  font-size:28px;
-  font-weight:800;
-  margin-bottom:5px;
+header h1{
+  font-family:"Cairo", sans-serif;
+  font-size:22px;
 }
 
-.header p{
-  opacity:.8;
-  font-size:14px;
-}
-
-/* Controls */
 .controls{
-  background:rgba(255,255,255,0.08);
-  backdrop-filter:blur(10px);
-  padding:15px 20px;
-  border-radius:15px;
   display:flex;
-  gap:15px;
   flex-wrap:wrap;
+  gap:10px;
   justify-content:center;
-  margin-bottom:25px;
+  padding:15px;
+  background:#0b1220;
 }
 
-.controls button,
-.controls input{
+select,button{
   padding:8px 14px;
-  border:none;
   border-radius:8px;
-  font-size:14px;
+  border:none;
+  font-family:"Cairo", sans-serif;
   cursor:pointer;
 }
 
-.controls button{
-  background:#ffd700;
-  font-weight:600;
+button{
+  background:#facc15;
+  font-weight:bold;
 }
 
-.controls input{
-  width:80px;
-  text-align:center;
+.quran-container{
+  max-width:900px;
+  margin:30px auto;
+  padding:25px;
+  line-height:2.3;
+  font-size:28px;
 }
 
-/* Mushaf Frame */
-.mushaf-wrapper{
-  background:#111;
-  padding:20px;
-  border-radius:20px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.6);
-}
-
-.mushaf-frame{
-  border:8px solid #d4af37;
-  border-radius:12px;
-  padding:15px;
-  background:#000;
-}
-
-.mushaf-frame img{
-  width:100%;
-  max-width:700px;
+.ayah{
+  cursor:pointer;
+  padding:6px 4px;
+  transition:.3s;
   border-radius:6px;
-  display:block;
 }
 
-/* Page Number */
-.page-info{
+.ayah:hover{
+  background:rgba(250,204,21,0.15);
+}
+
+.ayah.active{
+  background:rgba(250,204,21,0.3);
+}
+
+audio{
+  width:100%;
+  margin-top:20px;
+}
+
+.loading{
   text-align:center;
-  margin-top:15px;
-  font-size:16px;
-  font-weight:600;
+  margin-top:40px;
+  opacity:.7;
 }
 
-/* Responsive */
 @media(max-width:768px){
-  .mushaf-frame img{
-    max-width:100%;
+  .quran-container{
+    font-size:22px;
+    padding:15px;
   }
 }
 </style>
@@ -115,54 +100,89 @@ body{
 
 <body>
 
-<div class="header">
-  <h1>📖 المصحف الشريف</h1>
-  <p>604 صفحة كاملة – عرض احترافي مريح للعين</p>
-</div>
+<header>
+  <h1>📖 القرآن الكريم - استماع تفاعلي</h1>
+</header>
 
 <div class="controls">
-  <button onclick="prevPage()">السابق</button>
-  <input type="number" id="pageInput" min="1" max="604" value="1">
-  <button onclick="goToPage()">اذهب</button>
-  <button onclick="nextPage()">التالي</button>
+  <select id="surahSelect"></select>
+
+  <select id="reciterSelect">
+    <option value="Alafasy_128kbps">مشاري العفاسي</option>
+    <option value="Abdurrahmaan_As-Sudais_128kbps">السديس</option>
+    <option value="Maher_AlMuaiqly_128kbps">ماهر المعيقلي</option>
+    <option value="Husary_128kbps">الحصري</option>
+  </select>
+
+  <button onclick="loadSurah()">تحميل السورة</button>
 </div>
 
-<div class="mushaf-wrapper">
-  <div class="mushaf-frame">
-    <img id="mushafImage" src="https://quran.ksu.edu.sa/png_big/1.png" alt="صفحة المصحف">
-  </div>
-  <div class="page-info">
-    الصفحة: <span id="pageNumber">1</span> / 604
-  </div>
+<div class="quran-container" id="quranText">
+  <div class="loading">اختر سورة لعرض النص...</div>
 </div>
+
+<audio id="audioPlayer" controls></audio>
 
 <script>
-let currentPage = 1;
+const surahSelect = document.getElementById("surahSelect");
+const quranText = document.getElementById("quranText");
+const audioPlayer = document.getElementById("audioPlayer");
+const reciterSelect = document.getElementById("reciterSelect");
 
-function updatePage(){
-  if(currentPage < 1) currentPage = 1;
-  if(currentPage > 604) currentPage = 604;
+let currentSurahData = [];
 
-  document.getElementById("mushafImage").src =
-    "https://quran.ksu.edu.sa/png_big/" + currentPage + ".png";
+// تحميل أسماء السور
+fetch("https://api.alquran.cloud/v1/surah")
+.then(res=>res.json())
+.then(data=>{
+  data.data.forEach(surah=>{
+    let option = document.createElement("option");
+    option.value = surah.number;
+    option.textContent = surah.number + " - " + surah.name;
+    surahSelect.appendChild(option);
+  });
+});
 
-  document.getElementById("pageNumber").innerText = currentPage;
-  document.getElementById("pageInput").value = currentPage;
+// تحميل السورة
+function loadSurah(){
+  const surahNumber = surahSelect.value;
+  quranText.innerHTML = "<div class='loading'>جاري التحميل...</div>";
+
+  fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/ar.alafasy`)
+  .then(res=>res.json())
+  .then(data=>{
+    currentSurahData = data.data.ayahs;
+    renderAyahs(data.data.ayahs);
+  });
 }
 
-function nextPage(){
-  currentPage++;
-  updatePage();
+// عرض الآيات
+function renderAyahs(ayahs){
+  quranText.innerHTML = "";
+
+  ayahs.forEach((ayah,index)=>{
+    let span = document.createElement("span");
+    span.classList.add("ayah");
+    span.innerHTML = ayah.text + " ﴿" + ayah.numberInSurah + "﴾ ";
+    span.onclick = ()=> playAyah(index);
+    quranText.appendChild(span);
+  });
 }
 
-function prevPage(){
-  currentPage--;
-  updatePage();
-}
+// تشغيل آية
+function playAyah(index){
+  const reciter = reciterSelect.value;
+  const surah = surahSelect.value;
+  const ayahNumber = currentSurahData[index].numberInSurah;
 
-function goToPage(){
-  currentPage = parseInt(document.getElementById("pageInput").value);
-  updatePage();
+  document.querySelectorAll(".ayah").forEach(a=>a.classList.remove("active"));
+  document.querySelectorAll(".ayah")[index].classList.add("active");
+
+  const paddedSurah = surah.padStart(3,'0');
+  const paddedAyah = ayahNumber.toString().padStart(3,'0');
+
+  audioPlayer.src = `https://everyayah.com/data/${reciter}/${paddedSurah}${paddedAyah}.mp3`;
+  audioPlayer.play();
 }
 </script>
 
