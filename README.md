@@ -51,11 +51,12 @@ python3 tools/cisco_backup.py --inventory tools/devices.json --output-dir backup
 python3 tools/cisco_backup_desktop.py
 ```
 
-Then add:
-- IPs (`10.10.10.10-10.10.10.20` or `10.10.20.0/24` or comma-separated mix)
-- username
-- password
-- enable password
+Desktop UI features:
+- Modern, cleaner layout for operations teams
+- IP targets field supporting ranges/CIDR/CSV
+- Username, password, and enable password fields
+- **Browse…** button to choose output directory from file browser
+- Live execution log and run status
 
 ### 4) Schedule daily backup
 
