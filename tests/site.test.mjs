@@ -6,19 +6,21 @@ const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('styles.css', 'utf8');
 const js = readFileSync('script.js', 'utf8');
 
-test('homepage has main Ramadan and Quran sections', () => {
-  assert.match(html, /Quran Kareem \| Ramadan Kareem/);
-  assert.match(html, /Welcome to a Quran Kareem space for Ramadan/);
-  assert.match(html, /Daily Quran Reflection/);
-  assert.match(html, /Ramadan Checklist/);
+test('homepage has Quran viewer controls and prayer section', () => {
+  assert.match(html, /المصحف الشريف – 604 صفحة كاملة/);
+  assert.match(html, /id="moshafPage"/);
+  assert.match(html, /id="reciter"/);
+  assert.match(html, /id="prayerTimes"/);
 });
 
-test('styles include responsive grid and themed palette', () => {
+test('styles include global theme variables and responsive controls', () => {
   assert.match(css, /--accent:/);
-  assert.match(css, /grid-template-columns: repeat\(auto-fit, minmax\(240px, 1fr\)\)/);
-  assert.match(css, /\.hero/);
+  assert.match(css, /\.controls\s*\{/);
+  assert.match(css, /@media \(max-width: 900px\)/);
 });
 
-test('script updates page title from checklist progress', () => {
-  assert.match(js, /document\.title = `Quran Kareem \(\$\{done\}\/\$\{checkboxes\.length\} done\)`/);
+test('script includes image fallback providers and state persistence', () => {
+  assert.match(js, /const pageSources = \[/);
+  assert.match(js, /localStorage\.setItem\('lastPage'/);
+  assert.match(js, /setupPrayerTimes\(\);/);
 });

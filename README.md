@@ -1,13 +1,26 @@
-# Quran Kareem Ramadan Website
+# Quran Kareem - 604 Page Viewer
 
-This is a lightweight static website for Ramadan Kareem with Quran reflection and checklist features.
+A modern Arabic web experience for reading the full Mushaf (604 pages), listening to recitations, and viewing prayer times.
 
-## GitHub Testing
+## Features
 
-Automated tests run on every push and pull request using **GitHub Actions**.
+- Full page navigation with saved progress in `localStorage`.
+- Multi-source image fallback to reduce page-load failures.
+- Reciter selection + quick surah audio playback.
+- Prayer times from Aladhan API using geolocation.
+- Responsive design with optional light/dark theme.
 
-Workflow file: `.github/workflows/test.yml`
+## Run locally
 
-It runs:
-1. `node -c script.js` for JavaScript syntax validation.
-2. `npm test` for repository checks in `tests/site.test.mjs`.
+```bash
+python3 -m http.server 4173
+```
+
+Then open `http://localhost:4173`.
+
+## Tests
+
+```bash
+node -c script.js
+npm test
+```

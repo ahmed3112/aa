@@ -1,9 +1,20 @@
 :root {
-  --bg: #09122c;
-  --panel: #142850;
-  --text: #f5f7fa;
-  --accent: #f8b400;
-  --muted: #c9d6df;
+  --bg: #0a1c31;
+  --bg-elevated: #122c49;
+  --panel: #1a3a5f;
+  --text: #f8fbff;
+  --muted: #bfd3e8;
+  --accent: #f4c430;
+  --danger: #ff6b6b;
+  --radius: 16px;
+}
+
+body.light {
+  --bg: #eef4fc;
+  --bg-elevated: #ffffff;
+  --panel: #e8f0fb;
+  --text: #10243b;
+  --muted: #47607c;
 }
 
 * {
@@ -12,109 +23,152 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Cairo", system-ui, sans-serif;
   color: var(--text);
-  background: linear-gradient(180deg, #050b1a, #0a1931);
+  background: radial-gradient(circle at top, #12365a, var(--bg) 60%);
+  min-height: 100vh;
 }
 
-.hero {
-  min-height: 60vh;
-  position: relative;
-  background: radial-gradient(circle at top right, #1f4068, #0b132b 60%);
-  padding: 1.5rem;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.45));
-  pointer-events: none;
-}
-
-.top-nav,
-.hero-content {
-  position: relative;
-  z-index: 1;
-}
-
-.top-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.top-nav a {
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.hero-content {
-  max-width: 700px;
-  margin: 5rem auto 2rem;
+.site-header {
   text-align: center;
+  padding: 1.25rem 1rem;
+  background: linear-gradient(135deg, #09223c, #10385c);
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
-.arabic {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  margin-bottom: 0.5rem;
-  color: var(--accent);
+.site-header h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 4vw, 2.2rem);
 }
 
-.btn {
-  display: inline-block;
-  margin-top: 1rem;
-  background: var(--accent);
-  color: #141414;
-  padding: 0.75rem 1.3rem;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: 700;
+.site-header p {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
 }
 
-main {
-  max-width: 950px;
-  margin: -2rem auto 0;
+.container {
+  max-width: 1100px;
+  margin: 1.25rem auto;
   padding: 0 1rem 2rem;
 }
 
-.card {
-  background: rgba(20, 40, 80, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
-  padding: 1.2rem;
-  margin-bottom: 1rem;
-  backdrop-filter: blur(4px);
+.controls,
+.prayer-box {
+  background: var(--bg-elevated);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 34px rgb(0 0 0 / 25%);
 }
 
-.grid {
+.controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1.4fr 0.6fr 1.8fr;
+  gap: 0.75rem;
+  padding: 1rem;
+  align-items: end;
 }
 
-blockquote {
-  margin: 0;
-  padding-left: 1rem;
-  border-left: 4px solid var(--accent);
+.control-item {
+  display: grid;
+  gap: 0.35rem;
+  text-align: right;
 }
 
-blockquote span {
+.control-item span {
   color: var(--muted);
+  font-size: 0.95rem;
 }
 
-.checklist {
-  display: grid;
+select,
+input,
+button {
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 1.05rem;
+}
+
+select,
+input {
+  padding: 0.7rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-label {
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
+button {
+  cursor: pointer;
+  padding: 0.7rem 1rem;
+  background: #d5dfec;
+  color: #09223c;
+  font-weight: 700;
 }
 
-footer {
+button.primary {
+  background: var(--accent);
+}
+
+button:hover {
+  filter: brightness(0.95);
+}
+
+.viewer {
+  margin-top: 1rem;
   text-align: center;
-  color: var(--muted);
+}
+
+.frame {
+  position: relative;
+  background: #06101b;
+  border-radius: var(--radius);
+  padding: 0.85rem;
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+}
+
+.frame img {
+  width: min(100%, 880px);
+  border-radius: 12px;
+  background: #000;
+}
+
+.status {
+  position: absolute;
+  bottom: 1.2rem;
+  background: rgb(0 0 0 / 62%);
+  color: #fff;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+}
+
+.error {
+  background: var(--danger);
+}
+
+.page-info {
+  font-size: 1.3rem;
+  margin: 0.8rem 0;
+}
+
+audio {
+  width: 100%;
+  margin-top: 0.6rem;
+}
+
+.prayer-box {
+  margin-top: 1rem;
   padding: 1rem;
+}
+
+#prayerTimes {
+  line-height: 1.9;
+}
+
+@media (max-width: 900px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
 }
