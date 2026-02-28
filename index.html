@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>القرآن الكريم</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d4af37">
+
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -16,7 +19,6 @@ body{
   color:#222;
 }
 
-/* ===== Controls ===== */
 header{
   padding:15px;
   display:flex;
@@ -26,13 +28,11 @@ header{
   border-bottom:1px solid #eee;
 }
 
-button,select,input,a{
+button,input,a{
   padding:6px 12px;
   border-radius:8px;
   border:1px solid #ddd;
   cursor:pointer;
-  font-size:14px;
-  text-decoration:none;
 }
 
 button{
@@ -47,7 +47,6 @@ button{
   border:none;
 }
 
-/* ===== Frame ===== */
 .wrapper{
   display:flex;
   justify-content:center;
@@ -117,10 +116,6 @@ audio{
   width:100%;
   margin-top:20px;
 }
-
-@media(max-width:768px){
-  .quran-text{font-size:22px}
-}
 </style>
 </head>
 
@@ -131,16 +126,7 @@ audio{
 <input type="number" id="pageInput" min="1" max="604">
 <button onclick="goToPage()">اذهب</button>
 <button onclick="nextPage()">التالية ⮔</button>
-
-<select id="reciterSelect">
-<option value="afasy">مشاري العفاسي</option>
-<option value="sudais">السديس</option>
-<option value="maher">ماهر المعيقلي</option>
-<option value="husary">الحصري</option>
-</select>
-
-<button onclick="playFullSurah()">تشغيل السورة</button>
-<a id="downloadBtn" class="download-btn" download>⬇ تحميل</a>
+<a id="downloadBtn" class="download-btn" download>⬇ تحميل السورة</a>
 </header>
 
 <div class="wrapper">
@@ -160,6 +146,11 @@ audio{
 </div>
 
 <script>
+// تسجيل Service Worker
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('sw.js');
+}
+
 let currentPage=localStorage.getItem("lastPage") || 1;
 
 const quranText=document.getElementById("quranText");
@@ -169,7 +160,6 @@ const basmala=document.getElementById("basmala");
 const pageTitle=document.getElementById("pageTitle");
 const pageNumber=document.getElementById("pageNumber");
 const pageInput=document.getElementById("pageInput");
-const reciterSelect=document.getElementById("reciterSelect");
 const audioPlayer=document.getElementById("audioPlayer");
 const downloadBtn=document.getElementById("downloadBtn");
 
@@ -211,35 +201,15 @@ function loadPage(){
 }
 
 function playAyah(a){
- const rec=reciterSelect.value;
  const s=a.surah.number.toString().padStart(3,'0');
  const ay=a.numberInSurah.toString().padStart(3,'0');
-
- const base={
-  afasy:"Alafasy_128kbps",
-  sudais:"Abdurrahmaan_As-Sudais_128kbps",
-  maher:"Maher_AlMuaiqly_128kbps",
-  husary:"Husary_128kbps"
- };
-
- audioPlayer.src=`https://everyayah.com/data/${base[rec]}/${s}${ay}.mp3`;
+ audioPlayer.src=`https://everyayah.com/data/Alafasy_128kbps/${s}${ay}.mp3`;
  audioPlayer.play();
 }
 
-function playFullSurah(){
- const surah=surahName.innerText;
-}
-
 function updateDownloadLink(surah){
- const rec=reciterSelect.value;
  const s=surah.toString().padStart(3,'0');
- const links={
-  afasy:`https://server8.mp3quran.net/afs/${s}.mp3`,
-  sudais:`https://server11.mp3quran.net/sds/${s}.mp3`,
-  maher:`https://server12.mp3quran.net/maher/${s}.mp3`,
-  husary:`https://server13.mp3quran.net/husr/${s}.mp3`
- };
- downloadBtn.href=links[rec];
+ downloadBtn.href=`https://server8.mp3quran.net/afs/${s}.mp3`;
 }
 
 function nextPage(){if(currentPage<604){currentPage++;loadPage();}}
