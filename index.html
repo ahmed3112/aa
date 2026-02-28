@@ -5,37 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>القرآن الكريم</title>
 
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#d4af37">
-
-<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
 body{
   background:#ffffff;
-  font-family:"Amiri Quran",serif;
+  font-family:"Cairo",sans-serif;
   color:#222;
 }
 
 header{
   padding:15px;
   display:flex;
+  flex-wrap:wrap;
   gap:10px;
   justify-content:center;
   border-bottom:1px solid #eee;
 }
 
-button,input{
+button,select,input,a{
   padding:6px 12px;
   border-radius:8px;
   border:1px solid #ddd;
   cursor:pointer;
+  font-size:14px;
+  text-decoration:none;
 }
 
 button{
   background:#0f766e;
+  color:#fff;
+  border:none;
+}
+
+.download-btn{
+  background:#16a34a;
   color:#fff;
   border:none;
 }
@@ -65,22 +71,41 @@ button{
 .sub{
   text-align:center;
   margin-top:5px;
+  color:#666;
 }
 
 .basmala{
   text-align:center;
+  font-family:"Amiri Quran",serif;
   font-size:30px;
   margin:25px 0;
 }
 
 .text{
+  font-family:"Amiri Quran",serif;
   font-size:30px;
-  line-height:2.5;
+  line-height:2.6;
   text-align:justify;
 }
 
+.ayah{
+  cursor:pointer;
+  padding:4px;
+  border-radius:6px;
+  transition:.2s;
+}
+
+.ayah:hover{background:#f5f5dc}
+.ayah.active{background:#fde68a}
+
 .page-num{
   text-align:center;
+  margin-top:20px;
+  font-weight:600;
+}
+
+audio{
+  width:100%;
   margin-top:20px;
 }
 </style>
@@ -93,6 +118,16 @@ button{
 <input type="number" id="pageInput" min="1" max="604">
 <button onclick="goToPage()">اذهب</button>
 <button onclick="nextPage()">التالية ⮔</button>
+
+<select id="reciterSelect">
+<option value="Alafasy_128kbps">مشاري العفاسي</option>
+<option value="Abdurrahmaan_As-Sudais_128kbps">السديس</option>
+<option value="Maher_AlMuaiqly_128kbps">ماهر المعيقلي</option>
+<option value="Husary_128kbps">الحصري</option>
+</select>
+
+<button onclick="playFullSurah()">تشغيل السورة</button>
+<a id="downloadBtn" class="download-btn" download>⬇ تحميل السورة</a>
 </header>
 
 <div class="wrapper">
@@ -107,18 +142,14 @@ button{
 
 <div class="page-num" id="pageNumber"></div>
 
+<audio id="audioPlayer" controls></audio>
+
 </div>
 </div>
 
 <script>
-// ====== SERVICE WORKER ======
-if ('serviceWorker' in navigator) {
- window.addEventListener('load', () => {
-  navigator.serviceWorker.register('./sw.js');
- });
-}
-
 let currentPage = localStorage.getItem("lastPage") || 1;
+let currentSurahNumber = 1;
 
 const quranText = document.getElementById("quranText");
 const surahName = document.getElementById("surahName");
@@ -127,46 +158,80 @@ const basmala = document.getElementById("basmala");
 const pageTitle = document.getElementById("pageTitle");
 const pageNumber = document.getElementById("pageNumber");
 const pageInput = document.getElementById("pageInput");
+const reciterSelect = document.getElementById("reciterSelect");
+const audioPlayer = document.getElementById("audioPlayer");
+const downloadBtn = document.getElementById("downloadBtn");
 
 function loadPage(){
  localStorage.setItem("lastPage", currentPage);
  pageInput.value = currentPage;
 
  fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
- .then(r => r.json())
- .then(data => {
+ .then(res=>res.json())
+ .then(data=>{
 
   quranText.innerHTML="";
   basmala.innerHTML="";
 
   const ayahs = data.data.ayahs;
   const first = ayahs[0];
+  currentSurahNumber = first.surah.number;
 
   pageTitle.innerText = "الصفحة " + currentPage;
   pageNumber.innerText = currentPage + " / 604";
   surahName.innerText = first.surah.name;
   juzName.innerText = "الجزء " + first.juz;
 
-  let cleanAyahs = [...ayahs];
+  let ayahList = [...ayahs];
 
-  // === إزالة البسملة صح 100% ===
+  // إزالة البسملة صح 100%
   if(first.numberInSurah === 1 && first.surah.number !== 9){
     basmala.innerText = "بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-    cleanAyahs[0].text = cleanAyahs[0].text.replace(/^بِسْمِ.*?ٱلرَّحِيمِ\s*/,'');
+
+    ayahList[0].text = ayahList[0].text
+      .replace(/^بِسْمِ\sٱللّٰهِ\sٱلرَّحْمَٰنِ\sٱلرَّحِيمِ\s*/u,'');
   }
 
-  cleanAyahs.forEach(a=>{
+  ayahList.forEach((a,i)=>{
     let span = document.createElement("span");
-    span.innerHTML = a.text.trim() + " ﴿" + a.numberInSurah + "﴾ ";
+    span.classList.add("ayah");
+    span.innerHTML = a.text.trim()+" ﴿"+a.numberInSurah+"﴾ ";
+    span.onclick = ()=>playAyah(a,i);
     quranText.appendChild(span);
   });
 
+  updateDownloadLink();
  });
+}
+
+function playAyah(a,index){
+ const surah = a.surah.number.toString().padStart(3,'0');
+ const ayah = a.numberInSurah.toString().padStart(3,'0');
+ const reciter = reciterSelect.value;
+
+ document.querySelectorAll(".ayah").forEach(el=>el.classList.remove("active"));
+ document.querySelectorAll(".ayah")[index].classList.add("active");
+
+ audioPlayer.src = `https://everyayah.com/data/${reciter}/${surah}${ayah}.mp3`;
+ audioPlayer.play();
+}
+
+function playFullSurah(){
+ const surah = currentSurahNumber.toString().padStart(3,'0');
+ audioPlayer.src = `https://server8.mp3quran.net/afs/${surah}.mp3`;
+ audioPlayer.play();
+}
+
+function updateDownloadLink(){
+ const surah = currentSurahNumber.toString().padStart(3,'0');
+ downloadBtn.href = `https://server8.mp3quran.net/afs/${surah}.mp3`;
 }
 
 function nextPage(){ if(currentPage<604){currentPage++;loadPage();}}
 function prevPage(){ if(currentPage>1){currentPage--;loadPage();}}
 function goToPage(){ currentPage=parseInt(pageInput.value);loadPage(); }
+
+reciterSelect.addEventListener("change",updateDownloadLink);
 
 loadPage();
 </script>
