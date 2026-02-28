@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>القرآن الكريم</title>
+<title>القرآن الكريم - عرض بالصفحات</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -12,23 +12,18 @@
 
 body{
   font-family:"Cairo",sans-serif;
-  background:#f8f9fa;
+  background:#f4f6f8;
   color:#222;
 }
 
 header{
-  background:#ffffff;
+  background:#fff;
   padding:15px 20px;
   box-shadow:0 2px 10px rgba(0,0,0,0.05);
   display:flex;
   justify-content:space-between;
   align-items:center;
   flex-wrap:wrap;
-}
-
-header h1{
-  font-size:18px;
-  font-weight:700;
 }
 
 .controls{
@@ -38,7 +33,7 @@ header h1{
   align-items:center;
 }
 
-select,button,a{
+select,button,input,a{
   padding:6px 12px;
   border-radius:6px;
   border:1px solid #ddd;
@@ -63,17 +58,23 @@ button{
 .main{
   max-width:900px;
   margin:40px auto;
-  padding:20px;
+  padding:30px;
   background:#fff;
   border-radius:10px;
   box-shadow:0 5px 25px rgba(0,0,0,0.05);
 }
 
-.surah-title{
+.page-title{
   text-align:center;
-  margin-bottom:25px;
-  font-size:22px;
   font-weight:700;
+  margin-bottom:5px;
+}
+
+.basmala{
+  text-align:center;
+  font-family:"Amiri Quran",serif;
+  font-size:26px;
+  margin-bottom:20px;
 }
 
 .quran-text{
@@ -97,6 +98,12 @@ button{
   background:#bee3f8;
 }
 
+.page-number{
+  text-align:center;
+  margin-top:20px;
+  font-weight:600;
+}
+
 audio{
   width:100%;
   margin-top:25px;
@@ -111,75 +118,82 @@ audio{
 <body>
 
 <header>
-  <h1>📖 القرآن الكريم</h1>
 
-  <div class="controls">
-    <button onclick="prevSurah()">⮕ السابق</button>
+<div class="controls">
+  <button onclick="prevPage()">⮕ السابقة</button>
 
-    <select id="surahSelect"></select>
+  <input type="number" id="pageInput" min="1" max="604" value="1">
 
-    <button onclick="nextSurah()">التالي ⮔</button>
+  <button onclick="goToPage()">اذهب</button>
 
-    <select id="reciterSelect">
-      <option value="afasy">مشاري العفاسي</option>
-      <option value="sudais">السديس</option>
-      <option value="maher">ماهر المعيقلي</option>
-      <option value="husary">الحصري</option>
-    </select>
+  <button onclick="nextPage()">التالية ⮔</button>
 
-    <button onclick="playFullSurah()">تشغيل السورة</button>
+  <select id="reciterSelect">
+    <option value="afasy">مشاري العفاسي</option>
+    <option value="sudais">السديس</option>
+    <option value="maher">ماهر المعيقلي</option>
+    <option value="husary">الحصري</option>
+  </select>
 
-    <a id="downloadBtn" class="download-btn" download>⬇ تحميل</a>
-  </div>
+  <button onclick="playFullSurah()">تشغيل السورة</button>
+
+  <a id="downloadBtn" class="download-btn" download>⬇ تحميل السورة</a>
+</div>
+
 </header>
 
 <div class="main">
-  <div class="surah-title" id="surahTitle">اختر سورة</div>
-  <div class="quran-text" id="quranText"></div>
-  <audio id="audioPlayer" controls></audio>
+
+<div class="page-title" id="pageTitle">الصفحة 1</div>
+<div class="basmala" id="basmala"></div>
+
+<div class="quran-text" id="quranText"></div>
+
+<div class="page-number" id="pageNumber">1 / 604</div>
+
+<audio id="audioPlayer" controls></audio>
+
 </div>
 
 <script>
-const surahSelect=document.getElementById("surahSelect");
+let currentPage=1;
+let currentAyahs=[];
+let currentSurah=1;
+
 const quranText=document.getElementById("quranText");
-const surahTitle=document.getElementById("surahTitle");
+const basmala=document.getElementById("basmala");
+const pageTitle=document.getElementById("pageTitle");
+const pageNumber=document.getElementById("pageNumber");
+const pageInput=document.getElementById("pageInput");
 const reciterSelect=document.getElementById("reciterSelect");
 const audioPlayer=document.getElementById("audioPlayer");
 const downloadBtn=document.getElementById("downloadBtn");
 
-let currentSurahData=[];
-let currentSurah=1;
-
-// تحميل أسماء السور
-fetch("https://api.alquran.cloud/v1/surah")
-.then(res=>res.json())
-.then(data=>{
-  data.data.forEach(surah=>{
-    let option=document.createElement("option");
-    option.value=surah.number;
-    option.textContent=surah.number+" - "+surah.name;
-    surahSelect.appendChild(option);
-  });
-  loadSurah();
-});
-
-function loadSurah(){
-  currentSurah=surahSelect.value;
+function loadPage(){
   quranText.innerHTML="جاري التحميل...";
-  
-  fetch(`https://api.alquran.cloud/v1/surah/${currentSurah}`)
+  basmala.innerHTML="";
+
+  fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
   .then(res=>res.json())
   .then(data=>{
-    currentSurahData=data.data.ayahs;
-    surahTitle.innerText=data.data.name;
-    renderAyahs(currentSurahData);
+    currentAyahs=data.data.ayahs;
+    currentSurah=currentAyahs[0].surah.number;
+
+    renderPage();
     updateDownloadLink();
   });
 }
 
-function renderAyahs(ayahs){
+function renderPage(){
   quranText.innerHTML="";
-  ayahs.forEach((ayah,index)=>{
+  pageTitle.innerText="الصفحة "+currentPage;
+  pageNumber.innerText=currentPage+" / 604";
+
+  if(currentAyahs[0].numberInSurah===1 && currentSurah!==9){
+    basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+  }
+
+  currentAyahs.forEach((ayah,index)=>{
     let span=document.createElement("span");
     span.classList.add("ayah");
     span.innerHTML=ayah.text+" ﴿"+ayah.numberInSurah+"﴾ ";
@@ -190,8 +204,8 @@ function renderAyahs(ayahs){
 
 function playAyah(index){
   const reciter=reciterSelect.value;
-  const surah=currentSurah.toString().padStart(3,'0');
-  const ayah=currentSurahData[index].numberInSurah.toString().padStart(3,'0');
+  const surah=currentAyahs[index].surah.number.toString().padStart(3,'0');
+  const ayah=currentAyahs[index].numberInSurah.toString().padStart(3,'0');
 
   document.querySelectorAll(".ayah").forEach(a=>a.classList.remove("active"));
   document.querySelectorAll(".ayah")[index].classList.add("active");
@@ -233,22 +247,32 @@ function updateDownloadLink(){
   downloadBtn.href=getFullLink(reciter,surah);
 }
 
-function nextSurah(){
-  if(currentSurah<114){
-    surahSelect.value=parseInt(currentSurah)+1;
-    loadSurah();
+function nextPage(){
+  if(currentPage<604){
+    currentPage++;
+    pageInput.value=currentPage;
+    loadPage();
   }
 }
 
-function prevSurah(){
-  if(currentSurah>1){
-    surahSelect.value=parseInt(currentSurah)-1;
-    loadSurah();
+function prevPage(){
+  if(currentPage>1){
+    currentPage--;
+    pageInput.value=currentPage;
+    loadPage();
   }
 }
 
-surahSelect.addEventListener("change",loadSurah);
+function goToPage(){
+  currentPage=parseInt(pageInput.value);
+  if(currentPage<1) currentPage=1;
+  if(currentPage>604) currentPage=604;
+  loadPage();
+}
+
 reciterSelect.addEventListener("change",updateDownloadLink);
+
+loadPage();
 </script>
 
 </body>
