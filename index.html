@@ -12,7 +12,7 @@
 
 body{
   font-family:"Cairo",sans-serif;
-  background:#f5f6f8;
+  background:#f4f6f8;
   color:#222;
 }
 
@@ -20,9 +20,9 @@ header{
   background:#fff;
   padding:15px;
   display:flex;
-  flex-wrap:wrap;
   gap:10px;
   justify-content:center;
+  flex-wrap:wrap;
   box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
@@ -49,24 +49,14 @@ input{
   box-shadow:0 10px 40px rgba(0,0,0,0.08);
 }
 
-.page-title{
-  text-align:center;
-  font-weight:700;
-  font-size:18px;
-}
-
-.surah-name{
-  text-align:center;
-  font-weight:600;
-  margin-top:5px;
-}
-
+.page-title,
+.surah-name,
 .juz-name{
   text-align:center;
-  font-size:14px;
-  color:#777;
-  margin-bottom:20px;
 }
+
+.surah-name{margin-top:5px}
+.juz-name{color:#777;margin-bottom:20px}
 
 .basmala{
   text-align:center;
@@ -81,11 +71,16 @@ input{
   line-height:2.5;
 }
 
-audio{width:100%;margin-top:25px}
-
-@media(max-width:768px){
-  .quran-text{font-size:22px}
+.ayah{
+  cursor:pointer;
+  padding:4px;
+  border-radius:6px;
 }
+
+.ayah:hover{background:#edf2f7}
+.ayah.active{background:#bee3f8}
+
+audio{width:100%;margin-top:25px}
 </style>
 </head>
 
@@ -93,59 +88,61 @@ audio{width:100%;margin-top:25px}
 
 <header>
 <button onclick="prevPage()">⮕ السابقة</button>
-<input type="number" id="pageInput" min="1" max="604" value="1">
+<input type="number" id="pageInput" min="1" max="604">
 <button onclick="goToPage()">اذهب</button>
 <button onclick="nextPage()">التالية ⮔</button>
 </header>
 
 <div class="main">
-
 <div class="page-title" id="pageTitle"></div>
 <div class="surah-name" id="surahName"></div>
 <div class="juz-name" id="juzName"></div>
 <div class="basmala" id="basmala"></div>
-
 <div class="quran-text" id="quranText"></div>
 <audio id="audioPlayer" controls></audio>
-
 </div>
 
 <script>
 
 let currentPage=1;
 
-const pageInput=document.getElementById("pageInput");
-const quranText=document.getElementById("quranText");
+const pageTitle=document.getElementById("pageTitle");
 const surahName=document.getElementById("surahName");
 const juzName=document.getElementById("juzName");
 const basmala=document.getElementById("basmala");
-const pageTitle=document.getElementById("pageTitle");
+const quranText=document.getElementById("quranText");
+const pageInput=document.getElementById("pageInput");
 
 function loadPage(){
 
- pageTitle.innerText="الصفحة "+currentPage;
  pageInput.value=currentPage;
 
- fetch(`https://api.quran.com/api/v4/verses/by_page/${currentPage}?language=ar&words=false`)
- .then(res=>res.json())
+ fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
+ .then(r=>r.json())
  .then(data=>{
 
    quranText.innerHTML="";
    basmala.innerHTML="";
 
-   const verses=data.verses;
-   const first=verses[0];
+   const ayahs=data.data.ayahs;
+   const first=ayahs[0];
 
-   surahName.innerText=first.chapter_name;
-   juzName.innerText="الجزء "+first.juz_number;
+   pageTitle.innerText="الصفحة "+currentPage;
+   surahName.innerText=first.surah.name;
+   juzName.innerText="الجزء "+first.juz;
 
-   if(first.verse_number===1 && first.chapter_id!==9){
-     basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+   // لو أول آية في السورة
+   if(first.numberInSurah===1 && first.surah.number!==9){
+      basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+
+      // حذف أول آية بالكامل من العرض
+      ayahs.shift();
    }
 
-   verses.forEach(v=>{
+   ayahs.forEach((a,index)=>{
      let span=document.createElement("span");
-     span.innerHTML=v.text_uthmani+" ﴿"+v.verse_number+"﴾ ";
+     span.classList.add("ayah");
+     span.innerHTML=a.text+" ﴿"+a.numberInSurah+"﴾ ";
      quranText.appendChild(span);
    });
 
