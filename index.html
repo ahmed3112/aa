@@ -18,12 +18,12 @@ body{
 
 header{
   background:#fff;
-  padding:15px 20px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+  padding:15px;
   display:flex;
   flex-wrap:wrap;
   gap:10px;
   justify-content:center;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
 select,button,input,a{
@@ -197,7 +197,7 @@ function loadPage(){
 
   if(first.numberInSurah===1 && first.surah.number!==9){
    basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-   ayahList[0].text=ayahList[0].text.replace(/^بِسْمِ\sٱللّٰهِ\sٱلرَّحْمَٰنِ\sٱلرَّحِيمِ\s*/u,'');
+   ayahList[0].text=ayahList[0].text.slice(20);
   }
 
   ayahList.forEach((a,i)=>{
