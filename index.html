@@ -6,7 +6,7 @@
 <title>القرآن الكريم</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2c7a7b">
+<meta name="theme-color" content="#0f766e">
 
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -15,51 +15,77 @@
 
 body{
   font-family:"Cairo",sans-serif;
-  background:#f4f6f8;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  min-height:100vh;
   color:#222;
 }
 
+/* ===== Header ===== */
 header{
-  background:#fff;
+  background:#ffffff;
   padding:15px 20px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
   display:flex;
-  justify-content:space-between;
   flex-wrap:wrap;
   gap:10px;
+  justify-content:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
 select,button,input,a{
   padding:6px 12px;
-  border-radius:6px;
+  border-radius:8px;
   border:1px solid #ddd;
-  background:#fff;
-  cursor:pointer;
   font-size:14px;
+  cursor:pointer;
   text-decoration:none;
 }
 
 button{
-  background:#2c7a7b;
+  background:#0f766e;
   color:#fff;
   border:none;
 }
 
 .download-btn{
-  background:#38a169;
+  background:#16a34a;
   color:#fff;
   border:none;
 }
 
-.main{
-  max-width:900px;
-  margin:40px auto;
-  padding:30px;
-  background:#fff;
-  border-radius:10px;
-  box-shadow:0 5px 25px rgba(0,0,0,0.05);
+/* ===== Mushaf Frame ===== */
+.wrapper{
+  display:flex;
+  justify-content:center;
+  margin:40px 20px;
 }
 
+.mushaf-frame{
+  max-width:950px;
+  width:100%;
+  background:#fdfaf3;
+  border-radius:25px;
+  padding:35px;
+  position:relative;
+  box-shadow:
+    0 40px 80px rgba(0,0,0,0.4),
+    inset 0 0 40px rgba(212,175,55,0.15);
+  border:10px solid #d4af37;
+}
+
+/* زخرفة إضافية */
+.mushaf-frame::before{
+  content:"";
+  position:absolute;
+  top:15px;
+  left:15px;
+  right:15px;
+  bottom:15px;
+  border:3px solid #c9a227;
+  border-radius:18px;
+  pointer-events:none;
+}
+
+/* ===== Page Info ===== */
 .page-title{
   text-align:center;
   font-weight:700;
@@ -82,29 +108,43 @@ button{
 .basmala{
   text-align:center;
   font-family:"Amiri Quran",serif;
-  font-size:26px;
-  margin-bottom:20px;
+  font-size:28px;
+  margin-bottom:25px;
 }
 
+/* ===== Quran Text ===== */
 .quran-text{
   font-family:"Amiri Quran",serif;
-  font-size:28px;
-  line-height:2.3;
+  font-size:30px;
+  line-height:2.4;
+  text-align:justify;
 }
 
 .ayah{
   cursor:pointer;
   padding:4px;
   border-radius:6px;
+  transition:.2s;
 }
 
-.ayah:hover{background:#edf2f7}
-.ayah.active{background:#bee3f8}
+.ayah:hover{background:#f3e8c9}
+.ayah.active{background:#fde68a}
 
-audio{width:100%;margin-top:20px}
+.page-number{
+  text-align:center;
+  margin-top:25px;
+  font-weight:600;
+}
 
+audio{
+  width:100%;
+  margin-top:25px;
+}
+
+/* ===== Responsive ===== */
 @media(max-width:768px){
   .quran-text{font-size:22px}
+  .mushaf-frame{padding:20px}
 }
 </style>
 </head>
@@ -112,17 +152,12 @@ audio{width:100%;margin-top:20px}
 <body>
 
 <header>
-
 <button onclick="prevPage()">⮕ السابقة</button>
-
 <input type="number" id="pageInput" min="1" max="604" value="1">
-
 <button onclick="goToPage()">اذهب</button>
-
 <button onclick="nextPage()">التالية ⮔</button>
 
 <select id="surahSelect"></select>
-
 <select id="juzSelect"></select>
 
 <select id="reciterSelect">
@@ -133,12 +168,11 @@ audio{width:100%;margin-top:20px}
 </select>
 
 <button onclick="playFullSurah()">تشغيل السورة</button>
-
 <a id="downloadBtn" class="download-btn" download>⬇ تحميل</a>
-
 </header>
 
-<div class="main">
+<div class="wrapper">
+<div class="mushaf-frame">
 
 <div class="page-title" id="pageTitle"></div>
 <div class="surah-name" id="surahName"></div>
@@ -147,21 +181,21 @@ audio{width:100%;margin-top:20px}
 
 <div class="quran-text" id="quranText"></div>
 
+<div class="page-number" id="pageNumber"></div>
+
 <audio id="audioPlayer" controls></audio>
 
 </div>
+</div>
 
 <script>
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('sw.js');
-}
-
-let currentPage=localStorage.getItem("lastPage") || 1;
+let currentPage=localStorage.getItem("lastPage")||1;
 const quranText=document.getElementById("quranText");
 const surahName=document.getElementById("surahName");
 const juzName=document.getElementById("juzName");
 const basmala=document.getElementById("basmala");
 const pageTitle=document.getElementById("pageTitle");
+const pageNumber=document.getElementById("pageNumber");
 const pageInput=document.getElementById("pageInput");
 const surahSelect=document.getElementById("surahSelect");
 const juzSelect=document.getElementById("juzSelect");
@@ -200,6 +234,7 @@ function loadPage(){
   const first=ayahs[0];
 
   pageTitle.innerText="الصفحة "+currentPage;
+  pageNumber.innerText=currentPage+" / 604";
   surahName.innerText="سورة "+first.surah.name;
   juzName.innerText="الجزء "+first.juz;
 
@@ -207,7 +242,7 @@ function loadPage(){
    basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
   }
 
-  ayahs.forEach((a,i)=>{
+  ayahs.forEach(a=>{
    let span=document.createElement("span");
    span.classList.add("ayah");
    span.innerHTML=a.text+" ﴿"+a.numberInSurah+"﴾ ";
@@ -233,10 +268,6 @@ function playAyah(a){
  audioPlayer.play();
 }
 
-function playFullSurah(){
- const surah=surahName.innerText.replace("سورة ","");
-}
-
 function updateDownloadLink(surah){
  const rec=reciterSelect.value;
  const s=surah.toString().padStart(3,'0');
@@ -252,26 +283,6 @@ function updateDownloadLink(surah){
 function nextPage(){if(currentPage<604){currentPage++;loadPage();}}
 function prevPage(){if(currentPage>1){currentPage--;loadPage();}}
 function goToPage(){currentPage=parseInt(pageInput.value);loadPage();}
-
-surahSelect.addEventListener("change",()=>{
- fetch(`https://api.alquran.cloud/v1/surah/${surahSelect.value}`)
- .then(r=>r.json())
- .then(d=>{
-  currentPage=d.data.ayahs[0].page;
-  loadPage();
- });
-});
-
-juzSelect.addEventListener("change",()=>{
- fetch(`https://api.alquran.cloud/v1/juz/${juzSelect.value}/quran-uthmani`)
- .then(r=>r.json())
- .then(d=>{
-  currentPage=d.data.ayahs[0].page;
-  loadPage();
- });
-});
-
-reciterSelect.addEventListener("change",loadPage);
 
 loadPage();
 </script>
