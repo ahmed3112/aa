@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>11القرآن الكريم</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2c7a7b">
+<title>القرآن الكريم</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -24,9 +21,9 @@ header{
   padding:15px 20px;
   box-shadow:0 2px 10px rgba(0,0,0,0.05);
   display:flex;
-  justify-content:space-between;
   flex-wrap:wrap;
   gap:10px;
+  justify-content:center;
 }
 
 select,button,input,a{
@@ -89,7 +86,7 @@ button{
 .quran-text{
   font-family:"Amiri Quran",serif;
   font-size:28px;
-  line-height:2.3;
+  line-height:2.4;
 }
 
 .ayah{
@@ -112,17 +109,12 @@ audio{width:100%;margin-top:20px}
 <body>
 
 <header>
-
 <button onclick="prevPage()">⮕ السابقة</button>
-
-<input type="number" id="pageInput" min="1" max="604" value="1">
-
+<input type="number" id="pageInput" min="1" max="604">
 <button onclick="goToPage()">اذهب</button>
-
 <button onclick="nextPage()">التالية ⮔</button>
 
 <select id="surahSelect"></select>
-
 <select id="juzSelect"></select>
 
 <select id="reciterSelect">
@@ -133,9 +125,7 @@ audio{width:100%;margin-top:20px}
 </select>
 
 <button onclick="playFullSurah()">تشغيل السورة</button>
-
 <a id="downloadBtn" class="download-btn" download>⬇ تحميل</a>
-
 </header>
 
 <div class="main">
@@ -152,11 +142,9 @@ audio{width:100%;margin-top:20px}
 </div>
 
 <script>
-if('serviceWorker' in navigator){
- navigator.serviceWorker.register('sw.js');
-}
-
 let currentPage=localStorage.getItem("lastPage") || 1;
+let currentSurahNumber=1;
+
 const quranText=document.getElementById("quranText");
 const surahName=document.getElementById("surahName");
 const juzName=document.getElementById("juzName");
@@ -182,7 +170,7 @@ fetch("https://api.alquran.cloud/v1/surah")
  data.data.forEach(s=>{
   let opt=document.createElement("option");
   opt.value=s.number;
-  opt.textContent=s.number+" - "+s.name;
+  opt.textContent=s.number+" - "+s.name.replace("سورة ","");
   surahSelect.appendChild(opt);
  });
 });
@@ -196,56 +184,70 @@ function loadPage(){
  .then(data=>{
   quranText.innerHTML="";
   basmala.innerHTML="";
+
   const ayahs=data.data.ayahs;
   const first=ayahs[0];
+  currentSurahNumber=first.surah.number;
 
   pageTitle.innerText="الصفحة "+currentPage;
-  surahName.innerText="سورة "+first.surah.name;
+  surahName.innerText=first.surah.name.replace("سورة ","");
   juzName.innerText="الجزء "+first.juz;
+
+  let ayahList=[...ayahs];
 
   if(first.numberInSurah===1 && first.surah.number!==9){
    basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+   ayahList[0].text=ayahList[0].text.replace(/^بِسْمِ\sٱللّٰهِ\sٱلرَّحْمَٰنِ\sٱلرَّحِيمِ\s*/u,'');
   }
 
-  ayahs.forEach((a,i)=>{
+  ayahList.forEach((a,i)=>{
    let span=document.createElement("span");
    span.classList.add("ayah");
-   span.innerHTML=a.text+" ﴿"+a.numberInSurah+"﴾ ";
-   span.onclick=()=>playAyah(a);
+   span.innerHTML=a.text.trim()+" ﴿"+a.numberInSurah+"﴾ ";
+   span.onclick=()=>playAyah(a,i);
    quranText.appendChild(span);
   });
 
-  updateDownloadLink(first.surah.number);
+  updateDownloadLink();
  });
 }
 
-function playAyah(a){
+function playAyah(a,index){
  const rec=reciterSelect.value;
  const s=a.surah.number.toString().padStart(3,'0');
  const ay=a.numberInSurah.toString().padStart(3,'0');
+
  const base={
   afasy:"Alafasy_128kbps",
   sudais:"Abdurrahmaan_As-Sudais_128kbps",
   maher:"Maher_AlMuaiqly_128kbps",
   husary:"Husary_128kbps"
  };
+
+ document.querySelectorAll(".ayah").forEach(el=>el.classList.remove("active"));
+ document.querySelectorAll(".ayah")[index].classList.add("active");
+
  audioPlayer.src=`https://everyayah.com/data/${base[rec]}/${s}${ay}.mp3`;
  audioPlayer.play();
 }
 
 function playFullSurah(){
- const surah=surahName.innerText.replace("سورة ","");
+ const s=currentSurahNumber.toString().padStart(3,'0');
+ audioPlayer.src=`https://server8.mp3quran.net/afs/${s}.mp3`;
+ audioPlayer.play();
 }
 
-function updateDownloadLink(surah){
+function updateDownloadLink(){
  const rec=reciterSelect.value;
- const s=surah.toString().padStart(3,'0');
+ const s=currentSurahNumber.toString().padStart(3,'0');
+
  const links={
   afasy:`https://server8.mp3quran.net/afs/${s}.mp3`,
   sudais:`https://server11.mp3quran.net/sds/${s}.mp3`,
   maher:`https://server12.mp3quran.net/maher/${s}.mp3`,
   husary:`https://server13.mp3quran.net/husr/${s}.mp3`
  };
+
  downloadBtn.href=links[rec];
 }
 
@@ -271,7 +273,7 @@ juzSelect.addEventListener("change",()=>{
  });
 });
 
-reciterSelect.addEventListener("change",loadPage);
+reciterSelect.addEventListener("change",updateDownloadLink);
 
 loadPage();
 </script>
