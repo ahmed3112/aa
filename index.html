@@ -112,6 +112,7 @@ const juzName=document.getElementById("juzName");
 const basmala=document.getElementById("basmala");
 const quranText=document.getElementById("quranText");
 const pageInput=document.getElementById("pageInput");
+const audioPlayer=document.getElementById("audioPlayer");
 
 function loadPage(){
 
@@ -131,23 +132,41 @@ function loadPage(){
    surahName.innerText=first.surah.name;
    juzName.innerText="الجزء "+first.juz;
 
-   // لو أول آية في السورة
-   if(first.numberInSurah===1 && first.surah.number!==9){
-      basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-
-      // حذف أول آية بالكامل من العرض
-      ayahs.shift();
-   }
-
    ayahs.forEach((a,index)=>{
+
+     let text=a.text;
+
+     // لو أول آية في السورة وليست التوبة
+     if(a.numberInSurah===1 && a.surah.number!==9){
+
+        basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+
+        // حذف البسملة فقط من نص الآية بدون حذف باقي النص
+        text=text.replace(/^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*/,"");
+     }
+
      let span=document.createElement("span");
      span.classList.add("ayah");
-     span.innerHTML=a.text+" ﴿"+a.numberInSurah+"﴾ ";
+     span.innerHTML=text+" ﴿"+a.numberInSurah+"﴾ ";
+     span.onclick=()=>playAyah(a,index);
+
      quranText.appendChild(span);
    });
 
  });
 
+}
+
+function playAyah(a,index){
+
+ const s=a.surah.number.toString().padStart(3,'0');
+ const ay=a.numberInSurah.toString().padStart(3,'0');
+
+ document.querySelectorAll(".ayah").forEach(el=>el.classList.remove("active"));
+ document.querySelectorAll(".ayah")[index].classList.add("active");
+
+ audioPlayer.src=`https://everyayah.com/data/Alafasy_128kbps/${s}${ay}.mp3`;
+ audioPlayer.play();
 }
 
 function nextPage(){ if(currentPage<604){currentPage++;loadPage();}}
