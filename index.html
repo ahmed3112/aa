@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>القرآن الكريم</title>
+<title>القرآن الكريم - عرض بالصفحات</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -18,45 +18,57 @@ body{
 
 header{
   background:#fff;
-  padding:15px;
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  flex-wrap:wrap;
+  padding:15px 20px;
   box-shadow:0 2px 10px rgba(0,0,0,0.05);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
 }
 
-button,input{
+.controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+select,button,input,a{
   padding:6px 12px;
   border-radius:6px;
   border:1px solid #ddd;
-  background:#2c7a7b;
-  color:#fff;
+  background:#fff;
   cursor:pointer;
+  text-decoration:none;
+  font-size:14px;
 }
 
-input{
-  background:#fff;
-  color:#000;
+button{
+  background:#2c7a7b;
+  color:#fff;
+  border:none;
+}
+
+.download-btn{
+  background:#38a169;
+  color:#fff;
+  border:none;
 }
 
 .main{
   max-width:900px;
   margin:40px auto;
-  padding:40px;
+  padding:30px;
   background:#fff;
-  border-radius:12px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.08);
+  border-radius:10px;
+  box-shadow:0 5px 25px rgba(0,0,0,0.05);
 }
 
-.page-title,
-.surah-name,
-.juz-name{
+.page-title{
   text-align:center;
+  font-weight:700;
+  margin-bottom:5px;
 }
-
-.surah-name{margin-top:5px}
-.juz-name{color:#777;margin-bottom:20px}
 
 .basmala{
   text-align:center;
@@ -67,114 +79,200 @@ input{
 
 .quran-text{
   font-family:"Amiri Quran",serif;
-  font-size:30px;
-  line-height:2.5;
+  font-size:28px;
+  line-height:2.3;
 }
 
 .ayah{
   cursor:pointer;
-  padding:4px;
+  padding:4px 2px;
   border-radius:6px;
+  transition:.2s;
 }
 
-.ayah:hover{background:#edf2f7}
-.ayah.active{background:#bee3f8}
+.ayah:hover{
+  background:#edf2f7;
+}
 
-audio{width:100%;margin-top:25px}
+.ayah.active{
+  background:#bee3f8;
+}
+
+.page-number{
+  text-align:center;
+  margin-top:20px;
+  font-weight:600;
+}
+
+audio{
+  width:100%;
+  margin-top:25px;
+}
+
+@media(max-width:768px){
+  .quran-text{font-size:22px}
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<button onclick="prevPage()">⮕ السابقة</button>
-<input type="number" id="pageInput" min="1" max="604">
-<button onclick="goToPage()">اذهب</button>
-<button onclick="nextPage()">التالية ⮔</button>
+
+<div class="controls">
+  <button onclick="prevPage()">⮕ السابقة</button>
+
+  <input type="number" id="pageInput" min="1" max="604" value="1">
+
+  <button onclick="goToPage()">اذهب</button>
+
+  <button onclick="nextPage()">التالية ⮔</button>
+
+  <select id="reciterSelect">
+    <option value="afasy">مشاري العفاسي</option>
+    <option value="sudais">السديس</option>
+    <option value="maher">ماهر المعيقلي</option>
+    <option value="husary">الحصري</option>
+  </select>
+
+  <button onclick="playFullSurah()">تشغيل السورة</button>
+
+  <a id="downloadBtn" class="download-btn" download>⬇ تحميل السورة</a>
+</div>
+
 </header>
 
 <div class="main">
-<div class="page-title" id="pageTitle"></div>
-<div class="surah-name" id="surahName"></div>
-<div class="juz-name" id="juzName"></div>
+
+<div class="page-title" id="pageTitle">الصفحة 1</div>
 <div class="basmala" id="basmala"></div>
+
 <div class="quran-text" id="quranText"></div>
+
+<div class="page-number" id="pageNumber">1 / 604</div>
+
 <audio id="audioPlayer" controls></audio>
+
 </div>
 
 <script>
-
 let currentPage=1;
+let currentAyahs=[];
+let currentSurah=1;
 
-const pageTitle=document.getElementById("pageTitle");
-const surahName=document.getElementById("surahName");
-const juzName=document.getElementById("juzName");
-const basmala=document.getElementById("basmala");
 const quranText=document.getElementById("quranText");
+const basmala=document.getElementById("basmala");
+const pageTitle=document.getElementById("pageTitle");
+const pageNumber=document.getElementById("pageNumber");
 const pageInput=document.getElementById("pageInput");
+const reciterSelect=document.getElementById("reciterSelect");
 const audioPlayer=document.getElementById("audioPlayer");
+const downloadBtn=document.getElementById("downloadBtn");
 
 function loadPage(){
+  quranText.innerHTML="جاري التحميل...";
+  basmala.innerHTML="";
 
- pageInput.value=currentPage;
+  fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
+  .then(res=>res.json())
+  .then(data=>{
+    currentAyahs=data.data.ayahs;
+    currentSurah=currentAyahs[0].surah.number;
 
- fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
- .then(r=>r.json())
- .then(data=>{
-
-   quranText.innerHTML="";
-   basmala.innerHTML="";
-
-   const ayahs=data.data.ayahs;
-   const first=ayahs[0];
-
-   pageTitle.innerText="الصفحة "+currentPage;
-   surahName.innerText=first.surah.name;
-   juzName.innerText="الجزء "+first.juz;
-
-   ayahs.forEach((a,index)=>{
-
-     let text=a.text;
-
-     // لو أول آية في السورة وليست التوبة
-     if(a.numberInSurah===1 && a.surah.number!==9){
-
-        basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-
-        // حذف البسملة فقط من نص الآية بدون حذف باقي النص
-        text=text.replace(/^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*/,"");
-     }
-
-     let span=document.createElement("span");
-     span.classList.add("ayah");
-     span.innerHTML=text+" ﴿"+a.numberInSurah+"﴾ ";
-     span.onclick=()=>playAyah(a,index);
-
-     quranText.appendChild(span);
-   });
-
- });
-
+    renderPage();
+    updateDownloadLink();
+  });
 }
 
-function playAyah(a,index){
+function renderPage(){
+  quranText.innerHTML="";
+  pageTitle.innerText="الصفحة "+currentPage;
+  pageNumber.innerText=currentPage+" / 604";
 
- const s=a.surah.number.toString().padStart(3,'0');
- const ay=a.numberInSurah.toString().padStart(3,'0');
+  if(currentAyahs[0].numberInSurah===1 && currentSurah!==9){
+    basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+  }
 
- document.querySelectorAll(".ayah").forEach(el=>el.classList.remove("active"));
- document.querySelectorAll(".ayah")[index].classList.add("active");
-
- audioPlayer.src=`https://everyayah.com/data/Alafasy_128kbps/${s}${ay}.mp3`;
- audioPlayer.play();
+  currentAyahs.forEach((ayah,index)=>{
+    let span=document.createElement("span");
+    span.classList.add("ayah");
+    span.innerHTML=ayah.text+" ﴿"+ayah.numberInSurah+"﴾ ";
+    span.onclick=()=>playAyah(index);
+    quranText.appendChild(span);
+  });
 }
 
-function nextPage(){ if(currentPage<604){currentPage++;loadPage();}}
-function prevPage(){ if(currentPage>1){currentPage--;loadPage();}}
-function goToPage(){ currentPage=parseInt(pageInput.value);loadPage();}
+function playAyah(index){
+  const reciter=reciterSelect.value;
+  const surah=currentAyahs[index].surah.number.toString().padStart(3,'0');
+  const ayah=currentAyahs[index].numberInSurah.toString().padStart(3,'0');
+
+  document.querySelectorAll(".ayah").forEach(a=>a.classList.remove("active"));
+  document.querySelectorAll(".ayah")[index].classList.add("active");
+
+  audioPlayer.src=getAyahLink(reciter,surah,ayah);
+  audioPlayer.play();
+}
+
+function getAyahLink(reciter,surah,ayah){
+  const base={
+    afasy:"Alafasy_128kbps",
+    sudais:"Abdurrahmaan_As-Sudais_128kbps",
+    maher:"Maher_AlMuaiqly_128kbps",
+    husary:"Husary_128kbps"
+  };
+  return `https://everyayah.com/data/${base[reciter]}/${surah}${ayah}.mp3`;
+}
+
+function playFullSurah(){
+  const reciter=reciterSelect.value;
+  const surah=currentSurah.toString().padStart(3,'0');
+  audioPlayer.src=getFullLink(reciter,surah);
+  audioPlayer.play();
+}
+
+function getFullLink(reciter,surah){
+  const links={
+    afasy:`https://server8.mp3quran.net/afs/${surah}.mp3`,
+    sudais:`https://server11.mp3quran.net/sds/${surah}.mp3`,
+    maher:`https://server12.mp3quran.net/maher/${surah}.mp3`,
+    husary:`https://server13.mp3quran.net/husr/${surah}.mp3`
+  };
+  return links[reciter];
+}
+
+function updateDownloadLink(){
+  const reciter=reciterSelect.value;
+  const surah=currentSurah.toString().padStart(3,'0');
+  downloadBtn.href=getFullLink(reciter,surah);
+}
+
+function nextPage(){
+  if(currentPage<604){
+    currentPage++;
+    pageInput.value=currentPage;
+    loadPage();
+  }
+}
+
+function prevPage(){
+  if(currentPage>1){
+    currentPage--;
+    pageInput.value=currentPage;
+    loadPage();
+  }
+}
+
+function goToPage(){
+  currentPage=parseInt(pageInput.value);
+  if(currentPage<1) currentPage=1;
+  if(currentPage>604) currentPage=604;
+  loadPage();
+}
+
+reciterSelect.addEventListener("change",updateDownloadLink);
 
 loadPage();
-
 </script>
 
 </body>
