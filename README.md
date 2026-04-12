@@ -1,26 +1,50 @@
-# Quran Kareem - 604 Page Viewer
+# Clinic Booking System (PHP + MySQL)
 
-A modern Arabic web experience for reading the full Mushaf (604 pages), listening to recitations, and viewing prayer times.
+نظام حجز مواعيد عيادة كامل باستخدام PHP وMySQL.
 
-## Features
+## المميزات
 
-- Full page navigation with saved progress in `localStorage`.
-- Multi-source image fallback to reduce page-load failures.
-- Reciter selection + quick surah audio playback.
-- Prayer times from Aladhan API using geolocation.
-- Responsive design with optional light/dark theme.
+- صفحة حجز للمريض (اسم، هاتف، طبيب، خدمة، تاريخ/وقت، ملاحظات).
+- منع تضارب المواعيد لنفس الطبيب في نفس الوقت.
+- صفحة متابعة حجوزات المريض عبر رقم الهاتف مع إمكانية الإلغاء.
+- لوحة إدارة لتسجيل الدخول ومتابعة كل الحجوزات.
+- إدارة الأطباء (إضافة + تفعيل/تعطيل).
+- إدارة الخدمات (إضافة + تفعيل/تعطيل).
+- تغيير حالة الحجز (pending / confirmed / completed / cancelled).
 
-## Run locally
+## الملفات الأساسية
+
+- `index.php`: صفحة الحجز.
+- `my_bookings.php`: متابعة حجوزات المريض.
+- `admin_login.php`: تسجيل دخول الإدارة.
+- `admin_dashboard.php`: لوحة التحكم.
+- `schema.sql`: إنشاء الجداول وبيانات تجريبية.
+- `config.php`: إعدادات قاعدة البيانات وحساب الإدارة.
+
+## التشغيل المحلي
+
+1. أنشئ قاعدة البيانات والجداول:
 
 ```bash
-python3 -m http.server 4173
+mysql -u root -p < schema.sql
 ```
 
-Then open `http://localhost:4173`.
+2. عدّل إعدادات الاتصال في `config.php` إذا لزم.
 
-## Tests
+3. شغّل السيرفر المحلي:
 
 ```bash
-node -c script.js
-npm test
+php -S localhost:8000
 ```
+
+4. افتح:
+
+- `http://localhost:8000/index.php`
+- `http://localhost:8000/admin_login.php`
+
+## بيانات دخول الإدارة الافتراضية
+
+- المستخدم: `admin`
+- كلمة المرور: `admin123`
+
+> مهم: غيّر كلمة المرور في `config.php` قبل النشر الفعلي.
