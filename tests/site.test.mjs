@@ -6,23 +6,23 @@ const html = readFileSync('index.html', 'utf8');
 const css = readFileSync('styles.css', 'utf8');
 const js = readFileSync('script.js', 'utf8');
 
-test('homepage has quran page viewer and text reading section', () => {
-  assert.match(html, /المصحف الشريف – 604 صفحة كاملة/);
-  assert.match(html, /id="moshafPage"/);
-  assert.match(html, /id="textSurah"/);
-  assert.match(html, /id="quranTextContainer"/);
+test('homepage has fleet booking form and bookings table', () => {
+  assert.match(html, /FleetFlow/);
+  assert.match(html, /id="bookingForm"/);
+  assert.match(html, /id="tripType"/);
+  assert.match(html, /id="bookingRows"/);
 });
 
-test('styles include controls, text panel and responsive rules', () => {
-  assert.match(css, /--accent:/);
-  assert.match(css, /\.controls/);
-  assert.match(css, /\.quran-text/);
-  assert.match(css, /@media \(max-width: 900px\)/);
+test('styles include core layout and responsive rules', () => {
+  assert.match(css, /--primary:/);
+  assert.match(css, /\.layout/);
+  assert.match(css, /\.email-btn/);
+  assert.match(css, /@media \(max-width: 700px\)/);
 });
 
-test('script includes image fallbacks and text quran setup', () => {
-  assert.match(js, /const pageSources = \[/);
-  assert.match(js, /quran\.ksu\.edu\.sa\/png_big/);
-  assert.match(js, /function setupTextQuran\(\)/);
-  assert.match(js, /localStorage\.setItem\('lastTextSurah'/);
+test('script includes driver catalog, storage key and email composition', () => {
+  assert.match(js, /const STORAGE_KEY = 'fleetflow_bookings_v1'/);
+  assert.match(js, /const drivers = \[/);
+  assert.match(js, /function createEmailLink\(booking, driver\)/);
+  assert.match(js, /mailto:/);
 });

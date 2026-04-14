@@ -1,279 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>القرآن الكريم - عرض بالصفحات</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FleetFlow | نظام إدارة أسطول وحجوزات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <h1>FleetFlow</h1>
+        <p>نظام ويب متكامل لإدارة الأسطول، حجوزات الذهاب/الذهاب والعودة، وإرسال بيانات السائق.</p>
+      </div>
+    </header>
 
-<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <main class="layout">
+      <section class="card booking-card">
+        <h2>طلب حجز جديد</h2>
+        <form id="bookingForm" novalidate>
+          <div class="grid two">
+            <label>
+              <span>اسم مقدم الطلب</span>
+              <input id="requesterName" required placeholder="مثال: Ahmed Ali" />
+            </label>
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
+            <label>
+              <span>بريد مقدم الطلب</span>
+              <input id="requesterEmail" type="email" required placeholder="requester@company.com" />
+            </label>
+          </div>
 
-body{
-  font-family:"Cairo",sans-serif;
-  background:#f4f6f8;
-  color:#222;
-}
+          <div class="grid two">
+            <label>
+              <span>نوع الرحلة</span>
+              <select id="tripType" required>
+                <option value="one-way">ذهاب فقط</option>
+                <option value="round-trip">ذهاب وعودة</option>
+              </select>
+            </label>
 
-header{
-  background:#fff;
-  padding:15px 20px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  flex-wrap:wrap;
-}
+            <label>
+              <span>عدد الركاب</span>
+              <input id="passengers" type="number" min="1" max="20" required value="1" />
+            </label>
+          </div>
 
-.controls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
+          <div class="grid two">
+            <label>
+              <span>نقطة الانطلاق</span>
+              <input id="pickup" required placeholder="موقع الانطلاق" />
+            </label>
 
-select,button,input,a{
-  padding:6px 12px;
-  border-radius:6px;
-  border:1px solid #ddd;
-  background:#fff;
-  cursor:pointer;
-  text-decoration:none;
-  font-size:14px;
-}
+            <label>
+              <span>الوجهة</span>
+              <input id="dropoff" required placeholder="الوجهة" />
+            </label>
+          </div>
 
-button{
-  background:#2c7a7b;
-  color:#fff;
-  border:none;
-}
+          <div class="grid three">
+            <label>
+              <span>تاريخ الرحلة</span>
+              <input id="tripDate" type="date" required />
+            </label>
 
-.download-btn{
-  background:#38a169;
-  color:#fff;
-  border:none;
-}
+            <label>
+              <span>وقت الانطلاق</span>
+              <input id="tripTime" type="time" required />
+            </label>
 
-.main{
-  max-width:900px;
-  margin:40px auto;
-  padding:30px;
-  background:#fff;
-  border-radius:10px;
-  box-shadow:0 5px 25px rgba(0,0,0,0.05);
-}
+            <label id="returnGroup" hidden>
+              <span>وقت العودة</span>
+              <input id="returnTime" type="time" />
+            </label>
+          </div>
 
-.page-title{
-  text-align:center;
-  font-weight:700;
-  margin-bottom:5px;
-}
+          <label>
+            <span>ملاحظات إضافية</span>
+            <textarea id="notes" rows="3" placeholder="أي تعليمات مهمة للسائق أو فريق التشغيل"></textarea>
+          </label>
 
-.basmala{
-  text-align:center;
-  font-family:"Amiri Quran",serif;
-  font-size:26px;
-  margin-bottom:20px;
-}
+          <div class="actions">
+            <button class="primary" type="submit">إضافة الطلب</button>
+            <button id="clearBtn" type="button">مسح كل الطلبات</button>
+          </div>
+          <p id="formMessage" class="status" aria-live="polite"></p>
+        </form>
+      </section>
 
-.quran-text{
-  font-family:"Amiri Quran",serif;
-  font-size:28px;
-  line-height:2.3;
-}
+      <section class="card driver-card">
+        <h2>تعيين السائق والمركبة</h2>
+        <p class="muted">اختر السائق المناسب لكل طلب ثم أرسل بريد جاهز لمقدم الطلب يتضمن بيانات السائق.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>رقم الطلب</th>
+                <th>مقدم الطلب</th>
+                <th>المسار</th>
+                <th>موعد الرحلة</th>
+                <th>السائق</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="bookingRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
 
-.ayah{
-  cursor:pointer;
-  padding:4px 2px;
-  border-radius:6px;
-  transition:.2s;
-}
+    <template id="rowTemplate">
+      <tr>
+        <td class="cell-id"></td>
+        <td class="cell-requester"></td>
+        <td class="cell-route"></td>
+        <td class="cell-schedule"></td>
+        <td>
+          <select class="driver-select"></select>
+        </td>
+        <td class="cell-actions"></td>
+      </tr>
+    </template>
 
-.ayah:hover{
-  background:#edf2f7;
-}
-
-.ayah.active{
-  background:#bee3f8;
-}
-
-.page-number{
-  text-align:center;
-  margin-top:20px;
-  font-weight:600;
-}
-
-audio{
-  width:100%;
-  margin-top:25px;
-}
-
-@media(max-width:768px){
-  .quran-text{font-size:22px}
-}
-</style>
-</head>
-
-<body>
-
-<header>
-
-<div class="controls">
-  <button onclick="prevPage()">⮕ السابقة</button>
-
-  <input type="number" id="pageInput" min="1" max="604" value="1">
-
-  <button onclick="goToPage()">اذهب</button>
-
-  <button onclick="nextPage()">التالية ⮔</button>
-
-  <select id="reciterSelect">
-    <option value="afasy">مشاري العفاسي</option>
-    <option value="sudais">السديس</option>
-    <option value="maher">ماهر المعيقلي</option>
-    <option value="husary">الحصري</option>
-  </select>
-
-  <button onclick="playFullSurah()">تشغيل السورة</button>
-
-  <a id="downloadBtn" class="download-btn" download>⬇ تحميل السورة</a>
-</div>
-
-</header>
-
-<div class="main">
-
-<div class="page-title" id="pageTitle">الصفحة 1</div>
-<div class="basmala" id="basmala"></div>
-
-<div class="quran-text" id="quranText"></div>
-
-<div class="page-number" id="pageNumber">1 / 604</div>
-
-<audio id="audioPlayer" controls></audio>
-
-</div>
-
-<script>
-let currentPage=1;
-let currentAyahs=[];
-let currentSurah=1;
-
-const quranText=document.getElementById("quranText");
-const basmala=document.getElementById("basmala");
-const pageTitle=document.getElementById("pageTitle");
-const pageNumber=document.getElementById("pageNumber");
-const pageInput=document.getElementById("pageInput");
-const reciterSelect=document.getElementById("reciterSelect");
-const audioPlayer=document.getElementById("audioPlayer");
-const downloadBtn=document.getElementById("downloadBtn");
-
-function loadPage(){
-  quranText.innerHTML="جاري التحميل...";
-  basmala.innerHTML="";
-
-  fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
-  .then(res=>res.json())
-  .then(data=>{
-    currentAyahs=data.data.ayahs;
-    currentSurah=currentAyahs[0].surah.number;
-
-    renderPage();
-    updateDownloadLink();
-  });
-}
-
-function renderPage(){
-  quranText.innerHTML="";
-  pageTitle.innerText="الصفحة "+currentPage;
-  pageNumber.innerText=currentPage+" / 604";
-
-  if(currentAyahs[0].numberInSurah===1 && currentSurah!==9){
-    basmala.innerText="بِسْمِ ٱللّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-  }
-
-  currentAyahs.forEach((ayah,index)=>{
-    let span=document.createElement("span");
-    span.classList.add("ayah");
-    span.innerHTML=ayah.text+" ﴿"+ayah.numberInSurah+"﴾ ";
-    span.onclick=()=>playAyah(index);
-    quranText.appendChild(span);
-  });
-}
-
-function playAyah(index){
-  const reciter=reciterSelect.value;
-  const surah=currentAyahs[index].surah.number.toString().padStart(3,'0');
-  const ayah=currentAyahs[index].numberInSurah.toString().padStart(3,'0');
-
-  document.querySelectorAll(".ayah").forEach(a=>a.classList.remove("active"));
-  document.querySelectorAll(".ayah")[index].classList.add("active");
-
-  audioPlayer.src=getAyahLink(reciter,surah,ayah);
-  audioPlayer.play();
-}
-
-function getAyahLink(reciter,surah,ayah){
-  const base={
-    afasy:"Alafasy_128kbps",
-    sudais:"Abdurrahmaan_As-Sudais_128kbps",
-    maher:"Maher_AlMuaiqly_128kbps",
-    husary:"Husary_128kbps"
-  };
-  return `https://everyayah.com/data/${base[reciter]}/${surah}${ayah}.mp3`;
-}
-
-function playFullSurah(){
-  const reciter=reciterSelect.value;
-  const surah=currentSurah.toString().padStart(3,'0');
-  audioPlayer.src=getFullLink(reciter,surah);
-  audioPlayer.play();
-}
-
-function getFullLink(reciter,surah){
-  const links={
-    afasy:`https://server8.mp3quran.net/afs/${surah}.mp3`,
-    sudais:`https://server11.mp3quran.net/sds/${surah}.mp3`,
-    maher:`https://server12.mp3quran.net/maher/${surah}.mp3`,
-    husary:`https://server13.mp3quran.net/husr/${surah}.mp3`
-  };
-  return links[reciter];
-}
-
-function updateDownloadLink(){
-  const reciter=reciterSelect.value;
-  const surah=currentSurah.toString().padStart(3,'0');
-  downloadBtn.href=getFullLink(reciter,surah);
-}
-
-function nextPage(){
-  if(currentPage<604){
-    currentPage++;
-    pageInput.value=currentPage;
-    loadPage();
-  }
-}
-
-function prevPage(){
-  if(currentPage>1){
-    currentPage--;
-    pageInput.value=currentPage;
-    loadPage();
-  }
-}
-
-function goToPage(){
-  currentPage=parseInt(pageInput.value);
-  if(currentPage<1) currentPage=1;
-  if(currentPage>604) currentPage=604;
-  loadPage();
-}
-
-reciterSelect.addEventListener("change",updateDownloadLink);
-
-loadPage();
-</script>
-
-</body>
+    <script src="script.js" defer></script>
+  </body>
 </html>

@@ -1,24 +1,24 @@
-# Quran Kareem - 604 Page Viewer
+# FleetFlow - Fleet Management Web App
 
-A modern Arabic web experience for reading the full Mushaf (604 pages), listening to recitations, and viewing prayer times.
+واجهة ويب خفيفة لإدارة حجوزات الأسطول (ذهاب أو ذهاب وعودة)، مع تعيين السائقين وإرسال بريد إلكتروني لمقدم الطلب يتضمن بيانات السائق والمركبة.
 
-## Features
+## المميزات
 
-- Full page navigation with saved progress in `localStorage`.
-- Multi-source image fallback to reduce page-load failures.
-- Reciter selection + quick surah audio playback.
-- Prayer times from Aladhan API using geolocation.
-- Responsive design with optional light/dark theme.
+- نموذج حجز كامل: مقدم الطلب، المسار، نوع الرحلة، التاريخ/الوقت، وعدد الركاب.
+- دعم رحلات **ذهاب فقط** و **ذهاب وعودة** مع التحقق من وقت العودة.
+- جدول للحجوزات مع تعيين سائق مباشر لكل طلب.
+- توليد بريد إلكتروني جاهز بصيغة `mailto:` يتضمن كل التفاصيل المطلوبة للمُرسِل.
+- حفظ الطلبات محليًا في المتصفح عبر `localStorage`.
 
-## Run locally
+## التشغيل المحلي
 
 ```bash
 python3 -m http.server 4173
 ```
 
-Then open `http://localhost:4173`.
+ثم افتح `http://localhost:4173`.
 
-## Tests
+## الاختبارات
 
 ```bash
 node -c script.js
