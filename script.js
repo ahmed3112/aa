@@ -1,195 +1,211 @@
-const totalPages = 604;
-let currentPage = 1;
+const STORAGE_KEY = 'fleetflow_bookings_v1';
 
-const img = document.getElementById('moshafPage');
-const pageNumber = document.getElementById('pageNumber');
-const pageInput = document.getElementById('pageInput');
-const audio = document.getElementById('audioPlayer');
-const loadingState = document.getElementById('loadingState');
-const errorState = document.getElementById('errorState');
-
-const textSurah = document.getElementById('textSurah');
-const textStatus = document.getElementById('textStatus');
-const quranTextContainer = document.getElementById('quranTextContainer');
-const loadSurahBtn = document.getElementById('loadSurahBtn');
-
-const pageSources = [
-  (page) => `https://quran.ksu.edu.sa/png_big/${Number(page)}.png`,
-  (page) => `https://raw.githubusercontent.com/quran/quran.com-images/master/Pages/page${page}.png`,
-  (page) => `https://cdn.jsdelivr.net/gh/quran/quran.com-images@master/Pages/page${page}.png`,
-  (page) => `https://static.qurancdn.com/images/pages/page${Number(page)}.png`,
+const drivers = [
+  { id: 'drv-101', name: 'Mohamed Hassan', phone: '+20 100 111 2233', vehicle: 'Toyota Hiace', plate: 'ف س ط 4381' },
+  { id: 'drv-102', name: 'Youssef Adel', phone: '+20 101 225 9970', vehicle: 'Hyundai H1', plate: 'س ب ر 7214' },
+  { id: 'drv-103', name: 'Ahmed Samir', phone: '+20 102 331 7449', vehicle: 'Mercedes Sprinter', plate: 'ر م ن 1159' },
+  { id: 'drv-104', name: 'Karim Nabil', phone: '+20 109 441 5080', vehicle: 'Kia Carnival', plate: 'ع ل ج 9024' },
 ];
 
-function formatPage(page) {
-  return String(page).padStart(3, '0');
-}
+const bookingForm = document.getElementById('bookingForm');
+const bookingRows = document.getElementById('bookingRows');
+const rowTemplate = document.getElementById('rowTemplate');
+const formMessage = document.getElementById('formMessage');
+const tripType = document.getElementById('tripType');
+const returnGroup = document.getElementById('returnGroup');
+const returnTime = document.getElementById('returnTime');
+const clearBtn = document.getElementById('clearBtn');
 
-function updatePageState() {
-  pageNumber.textContent = currentPage;
-  pageInput.value = currentPage;
-  localStorage.setItem('lastPage', String(currentPage));
-}
+let bookings = loadBookings();
 
-function preloadImage(url) {
-  return new Promise((resolve, reject) => {
-    const probe = new Image();
-    probe.onload = () => resolve(url);
-    probe.onerror = reject;
-    probe.referrerPolicy = 'no-referrer';
-    probe.src = url;
-  });
-}
-
-async function loadPage() {
-  const formatted = formatPage(currentPage);
-  loadingState.hidden = false;
-  errorState.hidden = true;
-
-  for (const sourceBuilder of pageSources) {
-    const source = sourceBuilder(formatted);
-    try {
-      const resolved = await preloadImage(source);
-      img.src = resolved;
-      loadingState.hidden = true;
-      updatePageState();
-      return;
-    } catch {
-      // next source
-    }
-  }
-
-  loadingState.hidden = true;
-  errorState.hidden = false;
-  img.removeAttribute('src');
-  updatePageState();
-}
-
-function movePage(step) {
-  const next = Math.min(totalPages, Math.max(1, currentPage + step));
-  if (next !== currentPage) {
-    currentPage = next;
-    loadPage();
+function loadBookings() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
   }
 }
 
-function goToPage(page) {
-  const parsed = Number(page);
-  if (!Number.isInteger(parsed)) return;
-  currentPage = Math.min(totalPages, Math.max(1, parsed));
-  loadPage();
+function persistBookings() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
 }
 
-function playSurah() {
-  const reciter = document.getElementById('reciter').value;
-  let surah = Math.ceil(currentPage / 5);
-  surah = Math.min(114, Math.max(1, surah));
-  const surahCode = String(surah).padStart(3, '0');
-  audio.src = `https://everyayah.com/data/${reciter}/${surahCode}001.mp3`;
-  audio.play().catch(() => {});
+function setFormMessage(text, type) {
+  formMessage.textContent = text;
+  formMessage.className = 'status';
+  if (type) formMessage.classList.add(type);
 }
 
-function setupPrayerTimes() {
-  const prayerTimes = document.getElementById('prayerTimes');
-  if (!navigator.geolocation) {
-    prayerTimes.textContent = 'الموقع غير مدعوم في هذا المتصفح.';
+function makeBookingId() {
+  const today = new Date();
+  const yy = String(today.getFullYear()).slice(-2);
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const suffix = String(Math.floor(Math.random() * 900) + 100);
+  return `FLT-${yy}${mm}${dd}-${suffix}`;
+}
+
+function getDriverById(driverId) {
+  return drivers.find((driver) => driver.id === driverId) || drivers[0];
+}
+
+function driverOptions(selectedId) {
+  return drivers
+    .map((driver) => {
+      const selected = driver.id === selectedId ? 'selected' : '';
+      return `<option value="${driver.id}" ${selected}>${driver.name} — ${driver.vehicle}</option>`;
+    })
+    .join('');
+}
+
+function formatTripSchedule(booking) {
+  const returnSegment = booking.tripType === 'round-trip' && booking.returnTime ? ` | عودة: ${booking.returnTime}` : '';
+  return `${booking.tripDate} | انطلاق: ${booking.tripTime}${returnSegment}`;
+}
+
+function createEmailLink(booking, driver) {
+  const subject = `FleetFlow Booking ${booking.id} | Driver Details`;
+  const bodyLines = [
+    `Dear ${booking.requesterName},`,
+    '',
+    'Your fleet booking is confirmed with the following details:',
+    `Booking ID: ${booking.id}`,
+    `Trip Type: ${booking.tripType === 'round-trip' ? 'Round Trip' : 'One Way'}`,
+    `Route: ${booking.pickup} -> ${booking.dropoff}`,
+    `Passengers: ${booking.passengers}`,
+    `Schedule: ${formatTripSchedule(booking)}`,
+    '',
+    'Assigned Driver Information:',
+    `Driver Name: ${driver.name}`,
+    `Driver Phone: ${driver.phone}`,
+    `Vehicle: ${driver.vehicle}`,
+    `Plate Number: ${driver.plate}`,
+    '',
+    `Notes: ${booking.notes || 'N/A'}`,
+    '',
+    'Thanks,',
+    'Fleet Operations Team',
+  ];
+
+  const encodedSubject = encodeURIComponent(subject);
+  const encodedBody = encodeURIComponent(bodyLines.join('\n'));
+  return `mailto:${booking.requesterEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+}
+
+function renderBookings() {
+  bookingRows.innerHTML = '';
+
+  if (!bookings.length) {
+    bookingRows.innerHTML = '<tr><td class="empty" colspan="6">لا توجد حجوزات حالياً. أضف أول طلب الآن.</td></tr>';
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      try {
-        const response = await fetch(
-          `https://api.aladhan.com/v1/timings?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=5`,
-        );
-        const data = await response.json();
-        const t = data.data.timings;
-        prayerTimes.innerHTML = `الفجر: ${t.Fajr}<br>الظهر: ${t.Dhuhr}<br>العصر: ${t.Asr}<br>المغرب: ${t.Maghrib}<br>العشاء: ${t.Isha}`;
-      } catch {
-        prayerTimes.textContent = 'تعذر جلب المواقيت حالياً، حاول لاحقاً.';
-      }
-    },
-    () => {
-      prayerTimes.textContent = 'يرجى السماح بالموقع لعرض المواقيت بدقة.';
-    },
-    { timeout: 10000 },
-  );
+  for (const booking of bookings) {
+    const row = rowTemplate.content.firstElementChild.cloneNode(true);
+    row.querySelector('.cell-id').textContent = booking.id;
+    row.querySelector('.cell-requester').textContent = `${booking.requesterName} (${booking.requesterEmail})`;
+    row.querySelector('.cell-route').textContent = `${booking.pickup} ← ${booking.dropoff}`;
+    row.querySelector('.cell-schedule').textContent = formatTripSchedule(booking);
+
+    const select = row.querySelector('.driver-select');
+    select.innerHTML = driverOptions(booking.driverId);
+    select.addEventListener('change', (event) => {
+      booking.driverId = event.target.value;
+      persistBookings();
+      renderBookings();
+    });
+
+    const chosenDriver = getDriverById(booking.driverId);
+    const actionContainer = row.querySelector('.cell-actions');
+    const emailBtn = document.createElement('a');
+    emailBtn.className = 'email-btn';
+    emailBtn.href = createEmailLink(booking, chosenDriver);
+    emailBtn.target = '_blank';
+    emailBtn.rel = 'noreferrer';
+    emailBtn.textContent = 'إرسال بريد';
+    emailBtn.setAttribute('role', 'button');
+    actionContainer.appendChild(emailBtn);
+
+    bookingRows.appendChild(row);
+  }
 }
 
-function setupTheme() {
-  const themeBtn = document.getElementById('themeBtn');
-  const savedTheme = localStorage.getItem('theme');
-  const applyLabel = () => {
-    themeBtn.textContent = document.body.classList.contains('light') ? '🌙 الوضع الليلي' : '☀️ الوضع الفاتح';
+function getFormData() {
+  return {
+    requesterName: document.getElementById('requesterName').value.trim(),
+    requesterEmail: document.getElementById('requesterEmail').value.trim(),
+    tripType: document.getElementById('tripType').value,
+    passengers: Number(document.getElementById('passengers').value),
+    pickup: document.getElementById('pickup').value.trim(),
+    dropoff: document.getElementById('dropoff').value.trim(),
+    tripDate: document.getElementById('tripDate').value,
+    tripTime: document.getElementById('tripTime').value,
+    returnTime: returnTime.value,
+    notes: document.getElementById('notes').value.trim(),
   };
-
-  if (savedTheme === 'light') document.body.classList.add('light');
-  applyLabel();
-
-  themeBtn.addEventListener('click', () => {
-    document.body.classList.toggle('light');
-    localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
-    applyLabel();
-  });
 }
 
-function renderAyat(ayahs) {
-  quranTextContainer.innerHTML = ayahs
-    .map((ayah) => `<span class="ayah">${ayah.text}</span><span class="ayah-num">﴿${ayah.numberInSurah}﴾</span>`)
-    .join(' ');
-}
-
-async function loadTextSurah() {
-  const surahId = Number(textSurah.value);
-  if (!surahId) return;
-
-  textStatus.textContent = 'جاري تحميل السورة...';
-  quranTextContainer.innerHTML = '';
-
-  try {
-    const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/quran-uthmani`);
-    const payload = await response.json();
-    renderAyat(payload.data.ayahs);
-    textStatus.textContent = `تم تحميل سورة ${payload.data.name} (${payload.data.numberOfAyahs} آية).`;
-    localStorage.setItem('lastTextSurah', String(surahId));
-  } catch {
-    textStatus.textContent = 'تعذر تحميل السورة الآن. حاول مرة أخرى.';
+function validateBooking(data) {
+  if (!data.requesterName || !data.requesterEmail || !data.pickup || !data.dropoff || !data.tripDate || !data.tripTime) {
+    return 'يرجى استكمال كل الحقول الأساسية.';
   }
-}
 
-async function setupTextQuran() {
-  try {
-    const response = await fetch('https://api.alquran.cloud/v1/surah');
-    const payload = await response.json();
-    textSurah.innerHTML = payload.data
-      .map((surah) => `<option value="${surah.number}">${surah.number}. ${surah.name}</option>`)
-      .join('');
-
-    const saved = Number(localStorage.getItem('lastTextSurah') || '18');
-    textSurah.value = String(saved);
-    await loadTextSurah();
-  } catch {
-    textStatus.textContent = 'تعذر تحميل قائمة السور حالياً.';
+  if (!data.requesterEmail.includes('@')) {
+    return 'صيغة البريد الإلكتروني غير صحيحة.';
   }
+
+  if (data.passengers < 1 || data.passengers > 20) {
+    return 'عدد الركاب يجب أن يكون من 1 إلى 20.';
+  }
+
+  if (data.tripType === 'round-trip' && !data.returnTime) {
+    return 'يرجى تحديد وقت العودة لرحلة الذهاب والعودة.';
+  }
+
+  return '';
 }
 
-function setupEvents() {
-  document.getElementById('nextBtn').addEventListener('click', () => movePage(1));
-  document.getElementById('prevBtn').addEventListener('click', () => movePage(-1));
-  document.getElementById('playBtn').addEventListener('click', playSurah);
-  pageInput.addEventListener('change', (event) => goToPage(event.target.value));
-  loadSurahBtn.addEventListener('click', loadTextSurah);
+tripType.addEventListener('change', () => {
+  const isRoundTrip = tripType.value === 'round-trip';
+  returnGroup.hidden = !isRoundTrip;
+  returnTime.required = isRoundTrip;
+  if (!isRoundTrip) returnTime.value = '';
+});
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowRight') movePage(-1);
-    if (event.key === 'ArrowLeft') movePage(1);
+bookingForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const data = getFormData();
+  const validationError = validateBooking(data);
+
+  if (validationError) {
+    setFormMessage(validationError, 'error');
+    return;
+  }
+
+  bookings.unshift({
+    ...data,
+    id: makeBookingId(),
+    driverId: drivers[0].id,
+    createdAt: new Date().toISOString(),
   });
-}
 
-const savedPage = Number.parseInt(localStorage.getItem('lastPage') || '1', 10);
-if (Number.isInteger(savedPage) && savedPage >= 1 && savedPage <= totalPages) currentPage = savedPage;
+  persistBookings();
+  renderBookings();
+  bookingForm.reset();
+  tripType.value = 'one-way';
+  tripType.dispatchEvent(new Event('change'));
+  setFormMessage('تم إضافة الطلب بنجاح وتعيين سائق افتراضي.', 'success');
+});
 
-setupEvents();
-setupTheme();
-setupPrayerTimes();
-setupTextQuran();
-loadPage();
+clearBtn.addEventListener('click', () => {
+  bookings = [];
+  persistBookings();
+  renderBookings();
+  setFormMessage('تم مسح جميع الطلبات.', 'success');
+});
+
+tripType.dispatchEvent(new Event('change'));
+renderBookings();

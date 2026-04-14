@@ -1,94 +1,189 @@
 :root {
-  --bg: #071425;
-  --bg-elevated: #0f2a46;
-  --text: #ffffff;
-  --muted: #d4e5f8;
-  --accent: #f4c430;
-  --accent-text: #1f2530;
-  --danger: #ff6b6b;
-  --line: rgb(255 255 255 / 15%);
-  --radius: 18px;
-}
-
-body.light {
-  --bg: #edf4fb;
-  --bg-elevated: #ffffff;
+  --bg: #f2f6fb;
+  --card: #ffffff;
   --text: #0f2740;
-  --muted: #2f4b68;
-  --line: rgb(16 39 64 / 12%);
+  --muted: #587189;
+  --line: #dde5ee;
+  --primary: #0e7a6d;
+  --primary-hover: #0b6459;
+  --danger: #cf3f5f;
+  --danger-hover: #ac2645;
+  --radius: 16px;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Cairo", system-ui, sans-serif;
+  font-family: 'Cairo', system-ui, sans-serif;
+  background: linear-gradient(180deg, #ebf2f8 0%, #f8fbfe 100%);
   color: var(--text);
-  background: linear-gradient(180deg, #0d2d4c, var(--bg));
 }
 
-.site-header { background: linear-gradient(135deg, #0a2c4a, #0b2036); border-bottom: 1px solid var(--line); }
-.header-inner { max-width: 1100px; margin: 0 auto; padding: 1.2rem 1rem; text-align: center; }
-.site-header h1 { margin: 0; font-size: clamp(1.5rem, 4.5vw, 2.3rem); }
-.site-header p { margin: 0.35rem 0 0; color: var(--muted); font-weight: 700; }
+.site-header {
+  background: linear-gradient(120deg, #0b2d50, #12446b);
+  color: #fff;
+  padding: 1.2rem 1rem;
+  box-shadow: 0 6px 20px rgb(11 45 80 / 22%);
+}
 
-.container { max-width: 1100px; margin: 1.2rem auto; padding: 0 1rem 2rem; }
+.site-header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+}
 
-.controls, .frame, .audio-panel, .prayer-box, .text-panel {
-  background: var(--bg-elevated);
+.site-header p {
+  margin: 0.4rem 0 0;
+  max-width: 800px;
+}
+
+.layout {
+  max-width: 1180px;
+  margin: 1rem auto;
+  padding: 0 1rem 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: 0 14px 35px rgb(0 0 0 / 25%);
-}
-
-.controls { display: grid; grid-template-columns: 1.3fr 0.6fr 1.7fr; gap: 0.75rem; padding: 1rem; align-items: end; }
-.control-item { display: grid; gap: 0.35rem; }
-.control-item span { color: var(--muted); font-size: 0.95rem; font-weight: 700; }
-
-select, input, button { border-radius: 12px; font-family: inherit; font-size: 1.05rem; }
-select, input { border: 1px solid var(--line); padding: 0.72rem; background: #fff; color: #111; font-weight: 700; }
-.buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-button { border: 1px solid transparent; cursor: pointer; padding: 0.72rem 1rem; background: #e4ecf6; color: #0a2138; font-weight: 800; }
-button.primary { background: var(--accent); color: var(--accent-text); }
-
-.viewer { margin-top: 1rem; }
-.frame { position: relative; min-height: 300px; padding: 1rem; display: grid; place-items: center; background: #03101f; }
-.frame img { width: min(100%, 880px); display: block; border-radius: 12px; background: #000; }
-.status { position: absolute; top: 1rem; right: 50%; transform: translateX(50%); background: rgb(0 0 0 / 70%); color: #fff; padding: 0.45rem 0.9rem; border-radius: 999px; font-weight: 700; }
-.error { background: var(--danger); }
-.page-info { margin: 0.85rem 0; text-align: center; font-size: 1.5rem; font-weight: 800; }
-
-.audio-panel, .prayer-box, .text-panel { margin-top: 1rem; padding: 1rem; }
-.audio-panel h2, .prayer-box h2, .text-panel h2 { margin: 0 0 0.6rem; font-size: 1.15rem; }
-audio { width: 100%; }
-
-.text-tools { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 0.75rem; align-items: end; }
-.text-tools label { display: grid; gap: 0.35rem; }
-.text-tools span { color: var(--muted); font-weight: 700; }
-#textStatus { margin: 0.8rem 0; color: var(--muted); font-weight: 700; }
-.quran-text {
-  background: #101d31;
-  color: #f8fbff;
-  border-radius: 14px;
-  border: 1px solid rgb(255 255 255 / 12%);
   padding: 1rem;
-  line-height: 2.25;
-  font-size: 2rem;
-  font-family: "Amiri", serif;
+  box-shadow: 0 12px 24px rgb(15 39 64 / 8%);
 }
 
-.ayah { display: inline; }
-.ayah-num {
+h2 { margin-top: 0; }
+
+.grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+label {
+  display: grid;
+  gap: 0.38rem;
+  font-weight: 700;
+}
+
+label span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  border-radius: 10px;
+  border: 1px solid #cfd9e4;
   font-size: 1rem;
-  font-family: "Cairo", sans-serif;
-  color: #f4c430;
-  margin: 0 0.45rem;
 }
 
-#prayerTimes { line-height: 2; font-weight: 700; color: var(--text); }
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.7rem;
+  color: var(--text);
+  background: #fff;
+}
 
-@media (max-width: 900px) {
-  .controls, .text-tools { grid-template-columns: 1fr; }
-  .page-info { font-size: 1.25rem; }
-  .quran-text { font-size: 1.65rem; }
+textarea { resize: vertical; }
+
+.actions {
+  margin-top: 0.85rem;
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 0.65rem 0.95rem;
+  cursor: pointer;
+  background: #edf2f8;
+  font-weight: 800;
+}
+
+button.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+button.primary:hover { background: var(--primary-hover); }
+
+#clearBtn {
+  background: #fff;
+  color: var(--danger);
+  border-color: #f0b6c3;
+}
+
+#clearBtn:hover {
+  background: #fff4f7;
+  color: var(--danger-hover);
+}
+
+.status {
+  min-height: 1.2rem;
+  margin: 0.65rem 0 0;
+  font-weight: 700;
+}
+
+.status.error { color: var(--danger); }
+.status.success { color: var(--primary); }
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.68rem 0.45rem;
+  text-align: right;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.muted {
+  color: var(--muted);
+  margin-top: -0.2rem;
+}
+
+.email-btn {
+  background: #103e71;
+  border-color: #103e71;
+  color: #fff;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 1rem;
+}
+
+@media (min-width: 980px) {
+  .layout {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: start;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid.two,
+  .grid.three {
+    grid-template-columns: 1fr;
+  }
 }
